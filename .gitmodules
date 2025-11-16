@@ -1,0 +1,3 @@
+[submodule "stackshift"]
+	path = stackshift
+	url = https://github.com/jschulte/stackshift.git
