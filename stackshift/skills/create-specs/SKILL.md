@@ -50,21 +50,27 @@ Transforms reverse-engineering documentation into **GitHub Spec Kit format**:
 First, initialize Spec Kit in the project:
 
 ```bash
-# Install Spec Kit CLI (if not already installed)
+# Try to install and run Spec Kit CLI
 uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
-
-# Initialize in your project (non-interactive mode)
 specify init --here --ai claude --force
 
-# Or with project name
-specify init <project-name> --ai claude
-
-# Verify installation
-specify check
+# If that succeeded, you're done!
+# If it failed, use fallback:
 ```
 
-**Important:** Use `--ai claude` flag to run in non-interactive mode. This prevents
-the CLI from prompting for AI agent selection, which doesn't work in automated contexts.
+**Fallback if specify init fails:**
+
+```bash
+# Create slash commands manually
+mkdir -p .claude/commands
+cp ${CLAUDE_PLUGIN_ROOT}/claude-commands/speckit.*.md .claude/commands/
+
+# Verify
+ls .claude/commands/speckit.*.md
+# Should show: tasks, implement, analyze, clarify, plan, specify
+```
+
+This ensures `/speckit.*` commands work even without the `specify` CLI!
 
 This creates:
 ```
