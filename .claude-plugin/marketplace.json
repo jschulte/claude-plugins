@@ -11,7 +11,7 @@
     {
       "name": "stackshift",
       "version": "1.0.0",
-      "source": "./stackshift",
+      "source": "./stackshift/plugin",
       "description": "Reverse engineering toolkit - shift gears in your codebase. Dual workflow (Greenfield/Brownfield), cruise control, GitHub Spec Kit integration. Works with Claude Code, Web, and VSCode/Copilot."
     }
   ]
