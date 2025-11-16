@@ -1,0 +1,18 @@
+{
+  "name": "jschulte",
+  "owner": {
+    "name": "Jonah Schulte"
+  },
+  "metadata": {
+    "description": "Developer tools and Claude Code plugins by Jonah Schulte",
+    "homepage": "https://github.com/jschulte"
+  },
+  "plugins": [
+    {
+      "name": "stackshift",
+      "version": "1.0.0",
+      "source": "https://github.com/jschulte/stackshift.git",
+      "description": "Reverse engineering toolkit - shift gears in your codebase. Dual workflow (Greenfield/Brownfield), cruise control, GitHub Spec Kit integration. Works with Claude Code, Web, and VSCode/Copilot."
+    }
+  ]
+}
