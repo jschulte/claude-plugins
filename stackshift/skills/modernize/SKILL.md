@@ -1,9 +1,9 @@
 ---
 name: modernize
-description: Brownfield Facelift - Upgrade all dependencies and modernize the application while maintaining spec-driven control. Runs after Gear 6 for brownfield projects with modernize flag enabled. Updates deps, fixes breaking changes, improves test coverage, updates specs to match changes.
+description: Brownfield Upgrade - Upgrade all dependencies and modernize the application while maintaining spec-driven control. Runs after Gear 6 for brownfield projects with modernize flag enabled. Updates deps, fixes breaking changes, improves test coverage, updates specs to match changes.
 ---
 
-# Modernize (Brownfield Facelift)
+# Modernize (Brownfield Upgrade)
 
 **Optional Step** after Gear 6 for Brownfield projects with `modernize: true` flag.
 
@@ -24,7 +24,7 @@ Use this skill when:
 **Trigger Conditions:**
 - State file has `path: "brownfield"` AND `modernize: true`
 - Gear 6 (implement) is complete
-- User requested "Brownfield Facelift" during Gear 1
+- User requested "Brownfield Upgrade" during Gear 1
 
 ---
 
@@ -370,7 +370,7 @@ Modernization complete when:
 
 ---
 
-## Benefits of Brownfield Facelift
+## Benefits of Brownfield Upgrade
 
 ### vs. Standard Brownfield:
 - ✅ **Modern dependencies** (not stuck on old versions)

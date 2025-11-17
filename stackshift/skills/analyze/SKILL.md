@@ -97,16 +97,16 @@ B) Brownfield: Take the wheel on existing code
    → Manage existing codebase with specs
 ```
 
-**Question 2: Brownfield Facelift Mode** _(If Brownfield selected)_
+**Question 2: Brownfield Mode** _(If Brownfield selected)_
 ```
-Do you want to modernize dependencies after spec completion?
+Do you want to upgrade dependencies after establishing specs?
 
-A) Standard Brownfield - Just create specs for current state
+A) Standard - Just create specs for current state
    → Document existing implementation as-is
    → Specs match current code exactly
    → Good for maintaining existing versions
 
-B) Brownfield Facelift - Create specs + upgrade everything
+B) Upgrade - Create specs + upgrade all dependencies
    → Spec current state first (100% coverage)
    → Then upgrade all dependencies to latest versions
    → Fix breaking changes with spec guidance
@@ -114,7 +114,7 @@ B) Brownfield Facelift - Create specs + upgrade everything
    → End with modern, fully-spec'd application
    → Perfect for modernizing legacy apps
 
-**Facelift includes:**
+**Upgrade mode includes:**
 - npm update / pip upgrade / go get -u (based on tech stack)
 - Automated breaking change detection
 - Test-driven upgrade fixes
