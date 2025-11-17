@@ -8,7 +8,7 @@ description: Transform reverse-engineering documentation into GitHub Spec Kit fo
 **Step 3 of 6** in the Reverse Engineering to Spec-Driven Development process.
 
 **Estimated Time:** 30 minutes
-**Prerequisites:** Step 2 completed (`docs/reverse-engineering/` exists with 8 files)
+**Prerequisites:** Step 2 completed (`docs/reverse-engineering/` exists with 9 files)
 **Output:** `.specify/` directory with GitHub Spec Kit structure
 
 ---

@@ -85,7 +85,7 @@ Then cruise control takes over!
 ### Gear 2: Reverse Engineer (Auto)
 - Launches `stackshift:code-analyzer` agent
 - Extracts documentation based on route
-- Generates all 8 files
+- Generates all 9 files (including integration-points.md)
 - **Auto-shifts to Gear 3** ✅
 
 ### Gear 3: Create Specifications (Auto)

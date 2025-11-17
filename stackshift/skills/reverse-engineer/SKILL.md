@@ -9,7 +9,7 @@ description: Deep codebase analysis to generate 8 comprehensive documentation fi
 
 **Estimated Time:** 30-45 minutes
 **Prerequisites:** Step 1 completed (`analysis-report.md` and path selection)
-**Output:** 8 comprehensive documentation files in `docs/reverse-engineering/`
+**Output:** 9 comprehensive documentation files in `docs/reverse-engineering/`
 
 **Path-Dependent Behavior:**
 - **Greenfield:** Extract business logic only (framework-agnostic)
@@ -35,7 +35,7 @@ Use this skill when:
 
 ## What This Skill Does
 
-This skill performs deep codebase analysis and generates **8 comprehensive documentation files**.
+This skill performs deep codebase analysis and generates **9 comprehensive documentation files**.
 
 **Content adapts based on your path:**
 
@@ -53,16 +53,17 @@ This skill performs deep codebase analysis and generates **8 comprehensive docum
 - Prescriptive technical requirements
 - Enables `/speckit.analyze` validation
 
-**8 Documentation Files Generated:**
+**9 Documentation Files Generated:**
 
 1. **functional-specification.md** - Business logic, requirements, user stories (+ tech details for brownfield)
-2. **configuration-reference.md** - Config options (business-level for greenfield, all details for brownfield)
-3. **data-architecture.md** - Data models, API contracts (abstract for greenfield, schemas for brownfield)
-4. **operations-guide.md** - Operational needs (requirements for greenfield, current setup for brownfield)
-5. **technical-debt-analysis.md** - Issues and improvements
-6. **observability-requirements.md** - Monitoring needs (goals for greenfield, current state for brownfield)
-7. **visual-design-system.md** - UI/UX patterns (requirements for greenfield, implementation for brownfield)
-8. **test-documentation.md** - Testing requirements (targets for greenfield, current state for brownfield)
+2. **integration-points.md** - External services, APIs, dependencies, data flows (single source of truth)
+3. **configuration-reference.md** - Config options (business-level for greenfield, all details for brownfield)
+4. **data-architecture.md** - Data models, API contracts (abstract for greenfield, schemas for brownfield)
+5. **operations-guide.md** - Operational needs (requirements for greenfield, current setup for brownfield)
+6. **technical-debt-analysis.md** - Issues and improvements
+7. **observability-requirements.md** - Monitoring needs (goals for greenfield, current state for brownfield)
+8. **visual-design-system.md** - UI/UX patterns (requirements for greenfield, implementation for brownfield)
+9. **test-documentation.md** - Testing requirements (targets for greenfield, current state for brownfield)
 
 ---
 
