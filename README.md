@@ -6,7 +6,7 @@
 
 ## Available Plugins
 
-### 🚗 StackShift (v1.0.0)
+### 🚗 StackShift (v1.2.0)
 
 **Reverse engineering toolkit that transforms applications into spec-driven projects**
 
