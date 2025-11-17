@@ -97,7 +97,32 @@ B) Brownfield: Take the wheel on existing code
    → Manage existing codebase with specs
 ```
 
-**Question 2: Choose Your Transmission**
+**Question 2: Brownfield Facelift Mode** _(If Brownfield selected)_
+```
+Do you want to modernize dependencies after spec completion?
+
+A) Standard Brownfield - Just create specs for current state
+   → Document existing implementation as-is
+   → Specs match current code exactly
+   → Good for maintaining existing versions
+
+B) Brownfield Facelift - Create specs + upgrade everything
+   → Spec current state first (100% coverage)
+   → Then upgrade all dependencies to latest versions
+   → Fix breaking changes with spec guidance
+   → Improve test coverage to spec standards
+   → End with modern, fully-spec'd application
+   → Perfect for modernizing legacy apps
+
+**Facelift includes:**
+- npm update / pip upgrade / go get -u (based on tech stack)
+- Automated breaking change detection
+- Test-driven upgrade fixes
+- Spec updates for API changes
+- Coverage improvement to 85%+
+```
+
+**Question 3: Choose Your Transmission**
 ```
 How do you want to shift through the gears?
 
@@ -112,7 +137,7 @@ B) Cruise Control - Shift through all gears automatically
    → Good for experienced users or overnight runs
 ```
 
-**Question 3: Clarifications Strategy** _(If Cruise Control selected)_
+**Question 4: Clarifications Strategy** _(If Cruise Control selected)_
 ```
 How should [NEEDS CLARIFICATION] markers be handled?
 
@@ -129,7 +154,7 @@ C) Skip - Only implement fully-specified features
    → Some features won't be implemented
 ```
 
-**Question 4: Implementation Scope** _(If Cruise Control selected)_
+**Question 5: Implementation Scope** _(If Cruise Control selected)_
 ```
 What should be implemented in Gear 6?
 
