@@ -31,19 +31,74 @@ Use this skill when:
 
 ## What This Skill Does
 
-Transforms reverse-engineering documentation into **GitHub Spec Kit format**:
+**Automatically** transforms reverse-engineering documentation into **GitHub Spec Kit format** using F002 automated spec generation:
 
-1. **Initialize Spec Kit** - Run `specify init` to create `.specify/` structure
-2. **Constitution** - Create `.specify/memory/constitution.md` from project analysis
-3. **Specifications** - Generate feature specs in `specs/`
-4. **Implementation Plans** - Create initial plans for missing features
-5. **Enable Slash Commands** - Make `/speckit.*` commands available
+1. **Read reverse engineering docs** - Parse `docs/reverse-engineering/functional-specification.md`
+2. **Extract ALL features** - Identify every feature (complete, partial, missing)
+3. **Generate constitution** - Create `.specify/memory/constitution.md` with project principles
+4. **Create feature specs** - Generate `specs/###-feature-name/spec.md` for EVERY feature
+5. **Implementation plans** - Create `plan.md` for PARTIAL and MISSING features only
+6. **Enable slash commands** - Set up `/speckit.*` commands
 
-**Result:** Your reverse-engineered codebase is now in GitHub Spec Kit format, ready for `/speckit.implement`, `/speckit.analyze`, and ongoing spec-driven development.
+**Critical**: This creates specs for **100% of features**, not just gaps!
+- ✅ Complete features get specs (for future spec-driven changes)
+- ⚠️ Partial features get specs + plans (show what exists + what's missing)
+- ❌ Missing features get specs + plans (ready to implement)
+
+**Result:** Complete spec coverage - entire application under spec control.
 
 ---
 
-## Process Overview
+## 🤖 Execution Instructions
+
+**IMPORTANT**: This skill uses automated spec generation tools from F002.
+
+### Step 1: Call the MCP Tool
+
+Run the `stackshift_create_specs` MCP tool to automatically generate ALL specifications:
+
+**This tool will**:
+- Parse `docs/reverse-engineering/functional-specification.md`
+- Extract EVERY feature (complete, partial, missing)
+- Generate constitution and ALL feature specs
+- Create implementation plans for incomplete features
+
+**Usage**:
+```typescript
+// Call the MCP tool
+const result = await mcp.callTool('stackshift_create_specs', {
+  directory: process.cwd()
+});
+
+// The tool will:
+// 1. Read functional-specification.md
+// 2. Create specs for ALL features (not just gaps!)
+// 3. Mark implementation status (✅/⚠️/❌)
+// 4. Generate plans for PARTIAL/MISSING features
+// 5. Return summary showing complete coverage
+```
+
+**Expected output**:
+- Constitution created
+- 15-50 feature specs created (depending on app size)
+- 100% feature coverage
+- Implementation plans for incomplete features
+
+### Step 2: Verify Success
+
+After the tool completes, verify:
+1. `.specify/memory/constitution.md` exists
+2. `specs/###-feature-name/` directories created for ALL features
+3. Each feature has `spec.md`
+4. PARTIAL/MISSING features have `plan.md`
+
+If the tool fails, fall back to manual process below.
+
+---
+
+## Fallback: Manual Process Overview
+
+**Only use if automated tool fails**
 
 ### Step 1: Initialize GitHub Spec Kit
 

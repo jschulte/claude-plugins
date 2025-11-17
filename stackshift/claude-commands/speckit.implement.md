@@ -9,17 +9,16 @@ Systematically implement a feature from its specification and implementation pla
 
 ## Inputs
 
-**Feature name:** {{FEATURE_NAME}}
+**Feature name:** 008-user-profile/tasks.md
 
 **Files to read:**
-- Specification: `specs/{{FEATURE_NAME}}.md`
-- Implementation Plan: `specs/{{FEATURE_NAME}}.md`
-
+- Specification: `specs/specs/008-user-profile/tasks.md`
+- Implementation Plan: `specs/specs/008-user-profile/tasks.md`
 ## Implementation Process
 
 ### Step 1: Review Specification
 
-Read `specs/{{FEATURE_NAME}}.md`:
+Read `specs/specs/008-user-profile/tasks.md`:
 
 - Understand the feature overview
 - Read all user stories
@@ -29,7 +28,7 @@ Read `specs/{{FEATURE_NAME}}.md`:
 
 ### Step 2: Review Implementation Plan
 
-Read `specs/{{FEATURE_NAME}}.md`:
+Read `specs/specs/008-user-profile/tasks.md`:
 
 - Understand current vs target state
 - Review technical approach
@@ -102,7 +101,7 @@ Report test results:
 
 ### Step 6: Update Specification Status
 
-Update `specs/{{FEATURE_NAME}}.md`:
+Update `specs/specs/008-user-profile/tasks.md`:
 
 **If fully implemented:**
 ```markdown
@@ -139,9 +138,9 @@ Create commit with reference to specification:
 
 ```bash
 git add .
-git commit -m "feat: implement {{FEATURE_NAME}} ({{FEATURE_NAME}}.md)
+git commit -m "feat: implement specs/008-user-profile/tasks.md (specs/008-user-profile/tasks.md)
 
-Implemented from specification: specs/{{FEATURE_NAME}}.md
+Implemented from specification: specs/specs/008-user-profile/tasks.md
 
 Completed:
 - [Task 1]
@@ -159,7 +158,7 @@ Status: COMPLETE"
 Provide summary:
 
 ```markdown
-## Implementation Complete: {{FEATURE_NAME}}
+## Implementation Complete: specs/008-user-profile/tasks.md
 
 ### Tasks Completed
 - [x] Task 1: [description] (file.ts)
@@ -186,7 +185,7 @@ Provide summary:
 - Now: ✅ COMPLETE
 
 ### Commit
-✅ Committed: feat: implement {{FEATURE_NAME}}
+✅ Committed: feat: implement specs/008-user-profile/tasks.md
 
 ### Next Steps
 Ready to shift into next feature or run `/speckit.analyze` to validate.
