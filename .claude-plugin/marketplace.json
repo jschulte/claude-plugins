@@ -12,7 +12,7 @@
       "name": "stackshift",
       "version": "1.2.0",
       "source": "./stackshift",
-      "description": "Reverse engineering toolkit - shift gears in your codebase. Dual workflow (Greenfield/Brownfield/Facelift), cruise control, GitHub Spec Kit integration. Brownfield Facelift mode modernizes dependencies while maintaining spec control."
+      "description": "Reverse engineering toolkit - shift gears in your codebase. Dual workflow (Greenfield/Brownfield/Upgrade), cruise control, GitHub Spec Kit integration. Brownfield Upgrade mode modernizes dependencies while maintaining spec control."
     }
   ]
 }
