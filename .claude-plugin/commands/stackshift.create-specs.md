@@ -2,21 +2,10 @@
 description: Gear 3 - Generate GitHub Spec Kit specifications for ALL features
 ---
 
-Run the create-specs skill to automatically generate comprehensive specifications.
+Invoke the create-specs skill (Gear 3 of StackShift).
 
-This is **Gear 3** of the StackShift process.
+This automatically generates specifications for the ENTIRE application (not just gaps) - creates specs for existing features, partial features, and missing features. Achieves 100% spec coverage.
 
-Execute: `/skill create-specs`
+Prerequisite: Complete Gear 2 (reverse-engineer)
 
-This will:
-- Automatically parse functional-specification.md
-- Extract ALL features (complete, partial, missing)
-- Generate constitution.md
-- Create specs for EVERY feature (not just gaps!)
-- Create implementation plans for incomplete features
-- Set up /speckit.* slash commands
-- Achieve 100% spec coverage
-
-Prerequisites: Complete Gear 2 (reverse-engineer)
-
-**Critical**: Creates specs for existing features too, enabling spec-driven changes to current code!
+Use the Skill tool with skill="create-specs".

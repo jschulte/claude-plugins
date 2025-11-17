@@ -2,19 +2,10 @@
 description: Gear 6 - Implement features from specifications
 ---
 
-Run the implement skill to build features from specs.
+Invoke the implement skill (Gear 6 of StackShift).
 
-This is **Gear 6** of the StackShift process.
+This builds features from specs using /speckit.tasks and /speckit.implement. Only implements PARTIAL and MISSING features - existing features are already under spec control.
 
-Execute: `/skill implement`
+Prerequisite: Complete Gear 5 (complete-spec)
 
-This will:
-- Use /speckit.tasks to generate task list
-- Use /speckit.implement to build features
-- Work through prioritized implementation plan
-- Validate against specifications
-- Build PARTIAL and MISSING features
-
-Prerequisites: Complete Gear 5 (complete-spec)
-
-**Note**: Only implements incomplete features. Existing features are already under spec control from Gear 3!
+Use the Skill tool with skill="implement".

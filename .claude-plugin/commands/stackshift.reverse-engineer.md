@@ -2,18 +2,10 @@
 description: Gear 2 - Extract comprehensive documentation from codebase
 ---
 
-Run the reverse-engineer skill to create comprehensive documentation.
+Invoke the reverse-engineer skill (Gear 2 of StackShift).
 
-This is **Gear 2** of the StackShift process.
+This creates comprehensive documentation including functional requirements, data architecture, API endpoints, and business logic in docs/reverse-engineering/.
 
-Execute: `/skill reverse-engineer`
+Prerequisite: Complete Gear 1 (analyze)
 
-This will:
-- Extract comprehensive documentation (8-10 files)
-- Document functional requirements
-- Document data architecture
-- Document API endpoints
-- Document business logic
-- Create docs/reverse-engineering/ directory
-
-Prerequisites: Complete Gear 1 (analyze)
+Use the Skill tool with skill="reverse-engineer".

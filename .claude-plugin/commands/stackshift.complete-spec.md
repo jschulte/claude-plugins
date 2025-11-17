@@ -2,17 +2,10 @@
 description: Gear 5 - Resolve clarifications and complete specifications
 ---
 
-Run the complete-spec skill to resolve ambiguities.
+Invoke the complete-spec skill (Gear 5 of StackShift).
 
-This is **Gear 5** of the StackShift process.
+This resolves ambiguities by finding [NEEDS CLARIFICATION] markers, asking targeted questions, and updating specs.
 
-Execute: `/skill complete-spec`
+Prerequisite: Complete Gear 4 (gap-analysis)
 
-This will:
-- Find [NEEDS CLARIFICATION] markers
-- Ask targeted questions
-- Update specs with answers
-- Remove ambiguities
-- Prepare for implementation
-
-Prerequisites: Complete Gear 4 (gap-analysis)
+Use the Skill tool with skill="complete-spec".

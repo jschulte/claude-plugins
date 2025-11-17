@@ -2,16 +2,8 @@
 description: Gear 1 - Analyze codebase and detect tech stack
 ---
 
-Run the analyze skill to start reverse engineering.
+Invoke the analyze skill (Gear 1 of StackShift).
 
-This is **Gear 1** of the StackShift process.
+This will detect tech stack, map directory structure, assess completeness, create analysis-report.md, and help you choose Greenfield or Brownfield route.
 
-Execute: `/skill analyze`
-
-This will:
-- Detect programming language and framework
-- Identify application type
-- Map directory structure
-- Assess completeness
-- Create analysis-report.md
-- Ask you to choose route: Greenfield or Brownfield
+Use the Skill tool with skill="analyze".
