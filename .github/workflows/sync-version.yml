@@ -1,0 +1,58 @@
+name: Sync Plugin Versions
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  sync-versions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          VERSION="${TAG_NAME#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Update plugin.json version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          jq --arg version "$VERSION" '.version = $version' \
+            stackshift/.claude-plugin/plugin.json > tmp.json
+          mv tmp.json stackshift/.claude-plugin/plugin.json
+
+      - name: Update marketplace.json version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          jq --arg version "$VERSION" \
+            '(.plugins[] | select(.name == "stackshift") | .version) = $version' \
+            .claude-plugin/marketplace.json > tmp.json
+          mv tmp.json .claude-plugin/marketplace.json
+
+      - name: Update README.md version
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          sed -i "s/### 🚗 StackShift (v[0-9.]*)/### 🚗 StackShift (v$VERSION)/" README.md
+
+      - name: Commit version updates
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add stackshift/.claude-plugin/plugin.json .claude-plugin/marketplace.json README.md
+          git diff --staged --quiet || git commit -m "chore: sync version to $VERSION across all files"
+
+      - name: Push changes
+        run: |
+          git push origin main
