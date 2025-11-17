@@ -92,40 +92,28 @@ After the tool completes, verify:
 3. Each feature has `spec.md`
 4. PARTIAL/MISSING features have `plan.md`
 
-If the tool fails, fall back to manual process below.
-
 ---
 
-## Fallback: Manual Process Overview
+## If Automated Tool Fails
 
-**Only use if automated tool fails**
+The MCP tool creates all Spec Kit files programmatically - it does NOT need `specify init`.
 
-### Step 1: Initialize GitHub Spec Kit
+**The tool creates**:
+- `.specify/memory/constitution.md` (from templates)
+- `specs/###-feature-name/spec.md` (all features)
+- `specs/###-feature-name/plan.md` (for incomplete features)
+- `.claude/commands/speckit.*.md` (slash commands)
 
-First, initialize Spec Kit in the project:
-
-```bash
-# Try to install and run Spec Kit CLI
-uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
-specify init --here --ai claude --force
-
-# If that succeeded, you're done!
-# If it failed, use fallback:
-```
-
-**Fallback if specify init fails:**
+**If the MCP tool fails**, use the manual reconciliation prompt:
 
 ```bash
-# Create slash commands manually
-mkdir -p .claude/commands
-cp ${CLAUDE_PLUGIN_ROOT}/claude-commands/speckit.*.md .claude/commands/
+# Copy this prompt into Claude.ai:
+cat web/reconcile-specs.md
 
-# Verify
-ls .claude/commands/speckit.*.md
-# Should show: tasks, implement, analyze, clarify, plan, specify
+# This will manually create all specs with 100% coverage
 ```
 
-This ensures `/speckit.*` commands work even without the `specify` CLI!
+**DO NOT run `specify init`** - it requires GitHub API access and isn't needed since F002 creates all files directly.
 
 This creates:
 ```

@@ -89,11 +89,11 @@ Then cruise control takes over!
 - **Auto-shifts to Gear 3** ✅
 
 ### Gear 3: Create Specifications (Auto)
-- Runs `specify init --here --ai claude --force`
+- Calls automated spec generation (F002)
 - Generates constitution (appropriate template for route)
-- Launches `stackshift:technical-writer` agent
-- Creates all feature specs in parallel
-- Creates implementation plans
+- Creates all feature specs programmatically
+- Creates implementation plans for incomplete features
+- Sets up `/speckit.*` slash commands
 - **Auto-shifts to Gear 4** ✅
 
 ### Gear 4: Gap Analysis (Auto)
