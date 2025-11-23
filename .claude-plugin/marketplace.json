@@ -12,7 +12,7 @@
       "name": "stackshift",
       "version": "1.7.0",
       "source": "./stackshift",
-      "description": "Reverse engineering toolkit - shift gears in your codebase. Detection types (monorepo, nx, turborepo), dual routes (Greenfield/Brownfield/Upgrade), Gear 6.5 validation, batch processing, cruise control. GitHub Spec Kit integration with 100% spec coverage."
+      "description": "Reverse engineering toolkit with detection types (monorepo, nx, turborepo), dual routes (Greenfield/Brownfield/Upgrade), Gear 6.5 validation, batch processing, and cruise control. Achieves 100% spec coverage with GitHub Spec Kit integration."
     }
   ]
 }
