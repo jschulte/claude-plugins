@@ -80,22 +80,147 @@ This skill performs comprehensive initial analysis by:
 
 **Example:** "Add GitHub Spec Kit to this Next.js app so we can manage it with specs going forward"
 
-### Initial Questionnaire
+### Batch Session Auto-Configuration
 
-At the start of analysis, you'll answer several questions to configure your journey:
+**Before showing questions, check for batch session by walking up directories:**
+
+```bash
+# Function to find batch session file (walks up like .git search)
+find_batch_session() {
+  local current_dir="$(pwd)"
+  while [[ "$current_dir" != "/" ]]; do
+    if [[ -f "$current_dir/.stackshift-batch-session.json" ]]; then
+      echo "$current_dir/.stackshift-batch-session.json"
+      return 0
+    fi
+    current_dir="$(dirname "$current_dir")"
+  done
+  return 1
+}
+
+# Check if batch session exists
+BATCH_SESSION=$(find_batch_session)
+if [[ -n "$BATCH_SESSION" ]]; then
+  echo "✅ Using batch session configuration from: $BATCH_SESSION"
+  cat "$BATCH_SESSION" | jq '.answers'
+  # Auto-apply answers from batch session
+  # Skip questionnaire entirely
+fi
+```
+
+**If batch session exists:**
+1. Walk up directory tree to find `.stackshift-batch-session.json`
+2. Load answers from found batch session file
+3. Show: "Using batch session configuration: route=osiris, spec_output=~/git/specs, ..."
+4. Skip all questions below
+5. Proceed directly to analysis with pre-configured answers
+6. Save answers to local `.stackshift-state.json` as usual
+
+**Example directory structure:**
+```
+~/git/osiris/
+  ├── .stackshift-batch-session.json  ← Batch session here
+  ├── ws-vehicle-details/
+  │   └── [agent working here finds parent session]
+  ├── ws-hours/
+  │   └── [agent working here finds parent session]
+  └── ws-contact/
+      └── [agent working here finds parent session]
+```
+
+**If no batch session:**
+- Continue with normal questionnaire below
+
+---
+
+### Step 1: Auto-Detect Application Type
+
+**Before asking questions, detect what kind of application this is:**
+
+```bash
+# Check repository name and structure
+REPO_NAME=$(basename $(pwd))
+PARENT_DIR=$(basename $(dirname $(pwd)))
+
+# Detection patterns (in priority order)
+# Add your own patterns here for your framework/architecture!
+
+# Monorepo service detection
+if [[ "$PARENT_DIR" == "services" || "$PARENT_DIR" == "apps" ]] && [ -f "../../package.json" ]; then
+  DETECTION="monorepo-service"
+  echo "📦 Detected: Monorepo Service (services/* or apps/* directory)"
+
+# Nx workspace detection
+elif [ -f "nx.json" ] || [ -f "../../nx.json" ]; then
+  DETECTION="nx-app"
+  echo "⚡ Detected: Nx Application"
+
+# Turborepo detection
+elif [ -f "turbo.json" ] || [ -f "../../turbo.json" ]; then
+  DETECTION="turborepo-package"
+  echo "🚀 Detected: Turborepo Package"
+
+# Lerna package detection
+elif [ -f "lerna.json" ] || [ -f "../../lerna.json" ]; then
+  DETECTION="lerna-package"
+  echo "📦 Detected: Lerna Package"
+
+# Generic application (default)
+else
+  DETECTION="generic"
+  echo "🔍 Detected: Generic Application"
+fi
+
+echo "Detection type: $DETECTION"
+```
+
+**How Detection Patterns Work:**
+
+Detection identifies WHAT patterns to look for during analysis:
+- **monorepo-service**: Look for shared packages, inter-service calls, monorepo structure
+- **nx-app**: Look for project.json, workspace deps, Nx-specific patterns
+- **generic**: Standard application analysis
+
+**Add Your Own Patterns:**
+```bash
+# Example: Custom framework detection
+# elif [[ "$REPO_NAME" =~ ^my-widget- ]]; then
+#   DETECTION="my-framework-widget"
+#   echo "🎯 Detected: My Framework Widget"
+```
+
+**Detection determines what to analyze, but NOT how to spec it!**
+
+---
+
+### Step 2: Initial Questionnaire
+
+Now that we know what kind of application this is, let's configure the extraction approach:
 
 **Question 1: Choose Your Route**
 ```
 Which path best aligns with your goals?
 
-A) Greenfield: Shift to new tech stack
+A) Greenfield: Extract for migration to new tech stack
    → Extract business logic only (tech-agnostic)
    → Can implement in any stack
+   → Suitable for platform migrations
+   → Example: Extract Rails app business logic → rebuild in Next.js
 
-B) Brownfield: Take the wheel on existing code
-   → Extract business logic + technical details (prescriptive)
+B) Brownfield: Extract for maintaining existing codebase
+   → Extract business logic + technical details (tech-prescriptive)
    → Manage existing codebase with specs
+   → Suitable for in-place improvements
+   → Example: Add specs to Express API for ongoing maintenance
 ```
+
+**This applies to ALL detection types:**
+- Monorepo Service + Greenfield = Business logic for platform migration
+- Monorepo Service + Brownfield = Full implementation for maintenance
+- Nx App + Greenfield = Business logic for rebuild
+- Nx App + Brownfield = Full Nx/Angular details for refactoring
+- Generic + Greenfield = Business logic for rebuild
+- Generic + Brownfield = Full implementation for management
 
 **Question 2: Brownfield Mode** _(If Brownfield selected)_
 ```
@@ -137,7 +262,30 @@ B) Cruise Control - Shift through all gears automatically
    → Good for experienced users or overnight runs
 ```
 
-**Question 4: Clarifications Strategy** _(If Cruise Control selected)_
+**Question 4: Specification Thoroughness**
+```
+How thorough should specification generation be in Gear 3?
+
+A) Specs only (30 min - fast)
+   → Generate specs for all features
+   → Create plans manually with /speckit.plan as needed
+   → Good for: quick assessment, flexibility
+
+B) Specs + Plans (45-60 min - recommended)
+   → Generate specs for all features
+   → Auto-generate implementation plans for incomplete features
+   → Ready for /speckit.tasks when you implement
+   → Good for: most projects, balanced automation
+
+C) Specs + Plans + Tasks (90-120 min - complete roadmap)
+   → Generate specs for all features
+   → Auto-generate plans for incomplete features
+   → Auto-generate comprehensive task lists (300-500 lines each)
+   → Ready for immediate implementation
+   → Good for: large projects, maximum automation
+```
+
+**Question 5: Clarifications Strategy** _(If Cruise Control selected)_
 ```
 How should [NEEDS CLARIFICATION] markers be handled?
 
@@ -154,7 +302,7 @@ C) Skip - Only implement fully-specified features
    → Some features won't be implemented
 ```
 
-**Question 5: Implementation Scope** _(If Cruise Control selected)_
+**Question 6: Implementation Scope** _(If Cruise Control selected)_
 ```
 What should be implemented in Gear 6?
 
@@ -175,7 +323,32 @@ D) All - Every feature (may take hours/days)
    → Longest runtime
 ```
 
-**Question 5: Target Stack** _(If Greenfield + Implementation selected)_
+**Question 7: Spec Output Location** _(If Greenfield selected)_
+```
+Where should specifications and documentation be written?
+
+A) Current repository (default)
+   → Specs in: ./docs/reverse-engineering/, ./.specify/
+   → Simple, everything in one place
+   → Good for: small teams, single repo
+
+B) New application repository
+   → Specs in: ~/git/my-new-app/.specify/
+   → Specs live with NEW codebase
+   → Good for: clean separation, NEW repo already exists
+
+C) Separate documentation repository
+   → Specs in: ~/git/my-app-docs/.specify/
+   → Central docs repo for multiple apps
+   → Good for: enterprise, multiple related apps
+
+D) Custom location
+   → Your choice: [specify path]
+
+Default: Current repository (A)
+```
+
+**Question 6: Target Stack** _(If Greenfield + Implementation selected)_
 ```
 What tech stack for the new implementation?
 
@@ -186,7 +359,7 @@ Examples:
 - Your choice: [specify your preferred stack]
 ```
 
-**Question 6: Build Location** _(If Greenfield + Implementation selected)_
+**Question 7: Build Location** _(If Greenfield + Implementation selected)_
 ```
 Where should the new application be built?
 
@@ -231,6 +404,43 @@ Claude Code Web users: This won't work in Web - use subfolder instead.
 ```
 
 All answers are stored in `.stackshift-state.json` and guide the entire workflow.
+
+**State file example:**
+```json
+{
+  "detection_type": "monorepo-service",  // What kind of app: monorepo-service, nx-app, generic, etc.
+  "route": "greenfield",                  // How to spec it: greenfield or brownfield
+  "config": {
+    "spec_output_location": "~/git/my-new-app",  // Where to write specs/docs
+    "build_location": "~/git/my-new-app",         // Where to build new code (Gear 6)
+    "target_stack": "Next.js 15 + React 19 + Prisma",
+    "clarifications_strategy": "defer",
+    "implementation_scope": "p0_p1"
+  }
+}
+```
+
+**Key fields:**
+- `detection_type` - What we're analyzing (monorepo-service, nx-app, turborepo-package, generic)
+- `route` - How to spec it (greenfield = tech-agnostic, brownfield = tech-prescriptive)
+
+**Examples:**
+- Monorepo Service + Greenfield = Extract business logic for platform migration
+- Monorepo Service + Brownfield = Extract full implementation for maintenance
+- Nx App + Greenfield = Extract business logic (framework-agnostic)
+- Nx App + Brownfield = Extract full Nx/Angular implementation details
+
+**How it works:**
+
+**Spec Output Location:**
+- Gear 2 writes to: `{spec_output_location}/docs/reverse-engineering/`
+- Gear 3 writes to: `{spec_output_location}/.specify/memory/`
+- If not set: defaults to current directory
+
+**Build Location:**
+- Gear 6 writes code to: `{build_location}/src/`, `{build_location}/package.json`, etc.
+- Can be same as spec location OR different
+- If not set: defaults to `greenfield/` subfolder
 
 ### Implementing the Questionnaire
 
@@ -321,6 +531,94 @@ cd /Users/you/git/my-app
 # - Builds new app in: /Users/you/git/my-new-app/
 # - Two completely separate repos
 ```
+
+---
+
+## Step 0: Install Slash Commands (FIRST!)
+
+**Before any analysis, ensure /speckit.* commands are available:**
+
+```bash
+# Create project commands directory
+mkdir -p .claude/commands
+
+# Copy StackShift's slash commands to project
+cp ~/.claude/plugins/stackshift/.claude/commands/speckit.*.md .claude/commands/
+cp ~/.claude/plugins/stackshift/.claude/commands/stackshift.modernize.md .claude/commands/
+
+# Verify installation
+ls .claude/commands/speckit.*.md
+```
+
+**You should see:**
+- ✅ speckit.analyze.md
+- ✅ speckit.clarify.md
+- ✅ speckit.implement.md
+- ✅ speckit.plan.md
+- ✅ speckit.specify.md
+- ✅ speckit.tasks.md
+- ✅ stackshift.modernize.md
+
+**Why this is needed:**
+- Claude Code looks for slash commands in project `.claude/commands/` directory
+- Plugin-level commands are not automatically discovered
+- This copies them to the current project so they're available
+- Only needs to be done once per project
+
+**After copying:**
+- `/speckit.*` commands will be available for this project
+- No need to restart Claude Code
+- Commands work immediately
+
+### Critical: Commit Commands to Git
+
+**Add to .gitignore (or create if missing):**
+
+```bash
+# Allow .claude directory structure
+!.claude/
+!.claude/commands/
+
+# Track slash commands (team needs these!)
+!.claude/commands/*.md
+
+# Ignore user-specific settings
+.claude/settings.json
+.claude/mcp-settings.json
+```
+
+**Then commit:**
+
+```bash
+git add .claude/commands/
+git commit -m "chore: add StackShift and Spec Kit slash commands
+
+Adds /speckit.* and /stackshift.* slash commands for team use.
+
+Commands added:
+- /speckit.specify - Create feature specifications
+- /speckit.plan - Create technical plans
+- /speckit.tasks - Generate task lists
+- /speckit.implement - Execute implementation
+- /speckit.clarify - Resolve ambiguities
+- /speckit.analyze - Validate specs match code
+- /stackshift.modernize - Upgrade dependencies
+
+These commands enable spec-driven development workflow.
+All team members will have access after cloning.
+"
+```
+
+**Why this is critical:**
+- ✅ Teammates get commands when they clone
+- ✅ Commands are versioned with project
+- ✅ No setup needed for new team members
+- ✅ Commands always available
+
+**Without committing:**
+- ❌ Each developer needs to run StackShift or manually copy
+- ❌ Confusion: "Why don't slash commands work?"
+- ❌ Inconsistent developer experience
 
 ---
 

@@ -7,9 +7,33 @@ description: Transform reverse-engineering documentation into GitHub Spec Kit fo
 
 **Step 3 of 6** in the Reverse Engineering to Spec-Driven Development process.
 
-**Estimated Time:** 30 minutes
+**Estimated Time:** 30 minutes (specs only) to 90 minutes (specs + plans + tasks)
 **Prerequisites:** Step 2 completed (`docs/reverse-engineering/` exists with 9 files)
 **Output:** `.specify/` directory with GitHub Spec Kit structure
+
+---
+
+## Thoroughness Options
+
+Gear 3 generates different levels of detail based on configuration set in Gear 1:
+
+**Option 1: Specs Only** (30 min - fast)
+- Generate `.specify/specs/###-feature-name/spec.md` for all features
+- Constitution and folder structure
+- Ready for manual planning with `/speckit.plan`
+
+**Option 2: Specs + Plans** (45-60 min - recommended)
+- Everything from Option 1
+- **PLUS**: Auto-generate `plan.md` for PARTIAL/MISSING features
+- Ready for manual task breakdown with `/speckit.tasks`
+
+**Option 3: Specs + Plans + Tasks** (90-120 min - complete roadmap)
+- Everything from Option 2
+- **PLUS**: Auto-generate comprehensive `tasks.md` (300-500 lines each)
+- Ready for immediate implementation
+- No additional planning needed
+
+**Configuration:** Set during Gear 1 (Analyze) via initial questionnaire, stored in `.stackshift-state.json`
 
 ---
 
@@ -36,7 +60,7 @@ Use this skill when:
 1. **Read reverse engineering docs** - Parse `docs/reverse-engineering/functional-specification.md`
 2. **Extract ALL features** - Identify every feature (complete, partial, missing)
 3. **Generate constitution** - Create `.specify/memory/constitution.md` with project principles
-4. **Create feature specs** - Generate `specs/###-feature-name/spec.md` for EVERY feature
+4. **Create feature specs** - Generate `.specify/specs/###-feature-name/spec.md` for EVERY feature
 5. **Implementation plans** - Create `plan.md` for PARTIAL and MISSING features only
 6. **Enable slash commands** - Set up `/speckit.*` commands
 
@@ -46,6 +70,75 @@ Use this skill when:
 - ❌ Missing features get specs + plans (ready to implement)
 
 **Result:** Complete spec coverage - entire application under spec control.
+
+---
+
+## Configuration Check (FIRST STEP!)
+
+**Load state file to determine execution plan:**
+
+```bash
+# Check thoroughness level (set in Gear 1)
+THOROUGHNESS=$(cat .stackshift-state.json | jq -r '.config.gear3_thoroughness // "specs"')
+
+# Check route
+ROUTE=$(cat .stackshift-state.json | jq -r '.path')
+
+# Check spec output location (Greenfield may have custom location)
+SPEC_OUTPUT=$(cat .stackshift-state.json | jq -r '.config.spec_output_location // "."')
+
+echo "Route: $ROUTE"
+echo "Spec output: $SPEC_OUTPUT"
+echo "Thoroughness: $THOROUGHNESS"
+
+# Determine what to execute
+case "$THOROUGHNESS" in
+  "specs")
+    echo "Will generate: Specs only"
+    GENERATE_PLANS=false
+    GENERATE_TASKS=false
+    ;;
+  "specs+plans")
+    echo "Will generate: Specs + Plans"
+    GENERATE_PLANS=true
+    GENERATE_TASKS=false
+    ;;
+  "specs+plans+tasks")
+    echo "Will generate: Specs + Plans + Tasks (complete roadmap)"
+    GENERATE_PLANS=true
+    GENERATE_TASKS=true
+    ;;
+  *)
+    echo "Unknown thoroughness: $THOROUGHNESS, defaulting to specs only"
+    GENERATE_PLANS=false
+    GENERATE_TASKS=false
+    ;;
+esac
+
+# If custom location, ensure .specify directory exists there
+if [ "$SPEC_OUTPUT" != "." ]; then
+  echo "Creating .specify/ structure at custom location..."
+  mkdir -p "$SPEC_OUTPUT/.specify/specs"
+  mkdir -p "$SPEC_OUTPUT/.specify/memory"
+  mkdir -p "$SPEC_OUTPUT/.specify/templates"
+  mkdir -p "$SPEC_OUTPUT/.specify/scripts"
+fi
+```
+
+**Where specs will be written:**
+
+| Route | Config | Specs Written To |
+|-------|--------|------------------|
+| Greenfield | spec_output_location set | `{spec_output_location}/.specify/specs/` |
+| Greenfield | Not set (default) | `./.specify/specs/` (current repo) |
+| Brownfield | Always current | `./.specify/specs/` (current repo) |
+
+
+**Common patterns:**
+- Same repo: `spec_output_location: "."` (default)
+- New repo: `spec_output_location: "~/git/my-new-app"`
+- Docs repo: `spec_output_location: "~/git/my-app-docs"`
+- Subfolder: `spec_output_location: "./new-version"`
 
 ---
 
@@ -88,7 +181,7 @@ const result = await mcp.callTool('stackshift_create_specs', {
 
 After the tool completes, verify:
 1. `.specify/memory/constitution.md` exists
-2. `specs/###-feature-name/` directories created for ALL features
+2. `.specify/specs/###-feature-name/` directories created for ALL features
 3. Each feature has `spec.md`
 4. PARTIAL/MISSING features have `plan.md`
 
@@ -100,8 +193,8 @@ The MCP tool creates all Spec Kit files programmatically - it does NOT need `spe
 
 **The tool creates**:
 - `.specify/memory/constitution.md` (from templates)
-- `specs/###-feature-name/spec.md` (all features)
-- `specs/###-feature-name/plan.md` (for incomplete features)
+- `.specify/specs/###-feature-name/spec.md` (all features)
+- `.specify/specs/###-feature-name/plan.md` (for incomplete features)
 - `.claude/commands/speckit.*.md` (slash commands)
 
 **If the MCP tool fails**, use the manual reconciliation prompt:
@@ -121,18 +214,17 @@ This creates:
 ├── memory/
 │   └── constitution.md       # Project principles (will be generated)
 ├── templates/                # AI agent configs
-└── scripts/                  # Automation utilities
-
-specs/                        # Feature directories (will be generated)
-├── FEATURE-ID-001/
-│   ├── spec.md              # Feature specification
-│   ├── plan.md              # Implementation plan
-│   └── tasks.md             # Task breakdown (generated by /speckit.tasks)
-└── FEATURE-ID-002/
-    └── ...
+├── scripts/                  # Automation utilities
+└── specs/                    # Feature directories (will be generated)
+    ├── 001-feature-name/
+    │   ├── spec.md          # Feature specification
+    │   ├── plan.md          # Implementation plan
+    │   └── tasks.md         # Task breakdown (generated by /speckit.tasks)
+    └── 002-another-feature/
+        └── ...
 ```
 
-**Note:** Spec Kit uses `specs/FEATURE-ID/` directories (not `specs/`)
+**Note:** GitHub Spec Kit uses `.specify/specs/NNN-feature-name/` directory structure
 
 See [operations/init-speckit.md](operations/init-speckit.md)
 
@@ -434,18 +526,140 @@ If `greenfield_location` is an absolute path (e.g., `~/git/my-new-app`):
 
 ---
 
+## Step 4: Generate Plans (Optional - Thoroughness Level 2+)
+
+**If user selected Option 2 or 3**, automatically generate implementation plans for all PARTIAL/MISSING features.
+
+### Process
+
+1. **Scan specs directory**:
+   ```bash
+   find specs -name "spec.md" -type f | sort
+   ```
+
+2. **Identify incomplete features**:
+   - Parse status from each spec.md
+   - Filter for ⚠️ PARTIAL and ❌ MISSING
+   - Skip ✅ COMPLETE features (no plan needed)
+
+3. **Generate plans in parallel** (5 at a time):
+   ```javascript
+   // For each PARTIAL/MISSING feature
+   Task({
+     subagent_type: 'general-purpose',
+     model: 'sonnet',
+     description: `Create plan for ${featureName}`,
+     prompt: `
+       Read: specs/${featureId}/spec.md
+
+       Generate implementation plan following /speckit.plan template:
+       - Assess current state (what exists vs missing)
+       - Define target state (all acceptance criteria)
+       - Determine technical approach
+       - Break into implementation phases
+       - Identify risks and mitigations
+       - Define success criteria
+
+       Save to: specs/${featureId}/plan.md
+
+       Target: 300-500 lines, detailed but not prescriptive
+     `
+   });
+   ```
+
+4. **Verify coverage**:
+   - Check every PARTIAL/MISSING spec has plan.md
+   - Report summary (e.g., "8 plans generated for 8 incomplete features")
+
+---
+
+## Step 5: Generate Tasks (Optional - Thoroughness Level 3 Only)
+
+**If user selected Option 3**, automatically generate comprehensive task breakdowns for all plans.
+
+### Process
+
+1. **Scan for plans**:
+   ```bash
+   find specs -name "plan.md" -type f | sort
+   ```
+
+2. **Generate tasks in parallel** (3 at a time - slower due to length):
+   ```javascript
+   // For each plan
+   Task({
+     subagent_type: 'general-purpose',
+     model: 'sonnet',
+     description: `Create tasks for ${featureName}`,
+     prompt: `
+       Read: specs/${featureId}/spec.md
+       Read: specs/${featureId}/plan.md
+
+       Generate COMPREHENSIVE task breakdown:
+       - Break into 5-10 logical phases
+       - Each task has: status, file path, acceptance criteria, code examples
+       - Include Testing phase (unit, integration, E2E)
+       - Include Documentation phase
+       - Include Edge Cases section
+       - Include Dependencies section
+       - Include Acceptance Checklist
+       - Include Priority Actions
+
+       Target: 300-500 lines (be thorough!)
+
+       Save to: specs/${featureId}/tasks.md
+     `
+   });
+   ```
+
+3. **Verify quality**:
+   - Check each tasks.md is > 200 lines
+   - Flag if too short (< 200 lines)
+   - Report summary (e.g., "8 task files generated, avg 427 lines")
+
+---
+
+## Configuration
+
+**In .stackshift-state.json:**
+
+```json
+{
+  "config": {
+    "gear3_thoroughness": "specs+plans+tasks",  // or "specs" or "specs+plans"
+    "plan_parallel_limit": 5,
+    "task_parallel_limit": 3
+  }
+}
+```
+
+**Or ask user interactively if not set.**
+
+---
+
 ## Success Criteria
 
 After running this skill, you should have:
 
+**Thoroughness Level 1 (Specs Only):**
 - ✅ `.specify/` directory initialized
 - ✅ `constitution.md` created with project principles
 - ✅ Individual feature specifications in `specs/`
-- ✅ Implementation plans for PARTIAL/MISSING features
 - ✅ Implementation status clearly marked (✅/⚠️/❌)
 - ✅ `/speckit.*` slash commands available
-- ✅ Ready to use `/speckit.analyze` to validate
-- ✅ Ready to use `/speckit.implement` to fill gaps
+
+**Thoroughness Level 2 (Specs + Plans):**
+- ✅ Everything from Level 1
+- ✅ `plan.md` for every PARTIAL/MISSING feature
+- ✅ 100% plan coverage for incomplete features
+- ✅ Ready for manual task breakdown or `/speckit.tasks`
+
+**Thoroughness Level 3 (Specs + Plans + Tasks):**
+- ✅ Everything from Level 2
+- ✅ `tasks.md` for every planned feature
+- ✅ Comprehensive task lists (300-500 lines each)
+- ✅ Complete roadmap ready for implementation
+- ✅ No additional planning needed
 
 ---
 

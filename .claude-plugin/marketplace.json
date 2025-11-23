@@ -10,9 +10,9 @@
   "plugins": [
     {
       "name": "stackshift",
-      "version": "1.2.0",
+      "version": "1.7.0",
       "source": "./stackshift",
-      "description": "Reverse engineering toolkit - shift gears in your codebase. Dual workflow (Greenfield/Brownfield/Upgrade), cruise control, GitHub Spec Kit integration. Brownfield Upgrade mode modernizes dependencies while maintaining spec control."
+      "description": "Reverse engineering toolkit - shift gears in your codebase. Detection types (monorepo, nx, turborepo), dual routes (Greenfield/Brownfield/Upgrade), Gear 6.5 validation, batch processing, cruise control. GitHub Spec Kit integration with 100% spec coverage."
     }
   ]
 }

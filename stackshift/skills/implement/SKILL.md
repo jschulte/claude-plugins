@@ -493,7 +493,125 @@ After completing the reverse engineering process:
 
 ---
 
-**Congratulations!** You've completed the 6-step Reverse Engineering to Spec-Driven Development process. Your codebase is now enterprise-grade, fully specified, and ready for sustainable development using GitHub Spec Kit. 🎉
+## Gear 6.5: Validate & Review
+
+Before finalizing, let's ensure everything meets quality standards through systematic validation.
+
+### Step 1: Run Validation
+
+```bash
+# Validate implementation against specs
+/stackshift.validate --fix
+```
+
+This will:
+1. ✅ Run full test suite
+2. ✅ Validate TypeScript compilation
+3. ✅ Check spec compliance
+4. ✅ Categorize any issues
+5. ✅ Auto-fix issues (with --fix flag)
+6. ✅ Rollback if fixes fail
+
+**Expected result:**
+```
+✅ VALIDATION PASSED
+
+   All tests passing: ✅
+   TypeScript compiling: ✅
+   Spec compliance: ✅
+   Code quality: ✅
+
+🚀 Implementation is production-ready!
+```
+
+If validation finds issues, they'll be fixed automatically. If critical issues are found that can't be auto-fixed, I'll report them for manual resolution.
+
+### Step 2: Code Review
+
+```bash
+# Perform comprehensive code review
+/stackshift.review
+```
+
+This reviews across 5 dimensions:
+1. 🔍 **Correctness** - Works as intended, meets requirements
+2. 📏 **Standards** - Follows conventions, well documented
+3. 🔒 **Security** - No vulnerabilities, proper validation
+4. ⚡ **Performance** - Efficient, scalable implementation
+5. 🧪 **Testing** - Adequate coverage, edge cases handled
+
+**Expected result:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 Review Report
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### ✅ APPROVED
+
+All quality checks passed
+Ready for deployment
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+If issues are found, I'll provide specific feedback with line numbers and recommendations.
+
+### Step 3: Generate Spec Coverage Map
+
+After validation passes, let's create the coverage map...
+
+---
+
+## Final Step: Generate Spec Coverage Map
+
+Now let's create a visual coverage map showing the relationship between your specifications and code:
+
+```bash
+# Generate coverage map
+```
+
+I'll analyze all specs in `.specify/memory/specifications/` or `specs/` and create:
+
+1. **ASCII box diagrams** - Visual map of each spec's files
+2. **Reverse index** - Which spec(s) cover each file
+3. **Coverage statistics** - Percentages by category
+4. **Heat map** - Visual coverage representation
+5. **Gap analysis** - Files not covered by specs
+6. **Shared files** - High-risk files used by multiple specs
+
+**Output:** `docs/spec-coverage-map.md`
+
+This provides crucial visibility into spec-code alignment and helps identify any gaps!
+
+---
+
+## Spec Coverage Health Report
+
+After generating the coverage map, I'll show you a summary:
+
+```
+📊 Spec Coverage Health Report
+
+Overall Coverage: 91% (99/109 files)
+
+By Category:
+  Backend:       93% [████████████████░░]
+  Frontend:      92% [████████████████░░]
+  Infrastructure: 83% [███████████████░░░]
+  Database:      100% [████████████████████]
+  Scripts:       67% [█████████░░░░░░░░░]
+
+Status:
+  ✅ 12 specs covering 99 files
+  ⚠️  10 gap files identified (need review)
+  🔴 2 high-risk shared files (used by 4+ specs)
+
+Full report: docs/spec-coverage-map.md
+```
+
+---
+
+**Congratulations!** You've completed the 6-step Reverse Engineering to Spec-Driven Development process. Your codebase is now enterprise-grade, fully specified, and ready for sustainable development using GitHub Spec Kit or continue using StackShift to help develop new functionality. 🎉
 
 ---
 

@@ -1,44 +1,179 @@
 ---
 name: gap-analysis
-description: Use /speckit.analyze to compare specifications against implementation, then create prioritized gap list. Identifies incomplete features, missing UI components, technical debt, and inconsistencies between specs and code. This is Step 4 of 6 in the reverse engineering process.
+description: Route-aware gap analysis. For Brownfield - uses /speckit.analyze to compare specs against implementation. For Greenfield - validates spec completeness and asks about target tech stack for new implementation. This is Step 4 of 6 in the reverse engineering process.
 ---
 
-# Gap Analysis (with GitHub Spec Kit)
+# Gap Analysis (Route-Aware)
 
 **Step 4 of 6** in the Reverse Engineering to Spec-Driven Development process.
 
 **Estimated Time:** 15 minutes
 **Prerequisites:** Step 3 completed (`.specify/` directory exists with specifications)
-**Output:** Prioritized gap analysis and implementation roadmap
+**Output:** Route-specific analysis and implementation roadmap
 
 ---
 
-## When to Use This Skill
+## Configuration Check (FIRST STEP!)
 
-Use this skill when:
-- You've completed Step 3 (Create Specifications)
-- Have specifications in `specs/`
-- Ready to identify what's missing or incomplete
-- Want to validate specs against actual implementation
+**CRITICAL:** Check detection type and route:
 
-**Trigger Phrases:**
-- "Analyze gaps in implementation"
-- "What's missing from the application?"
-- "Run speckit analyze"
-- "Compare specs to code"
+```bash
+# Load state file
+DETECTION_TYPE=$(cat .stackshift-state.json | jq -r '.detection_type // .path')
+ROUTE=$(cat .stackshift-state.json | jq -r '.route // .path')
+
+echo "Detection: $DETECTION_TYPE (what kind of app)"
+echo "Route: $ROUTE (how to spec it)"
+```
+
+**Routes:**
+- **greenfield** → Building NEW app (tech-agnostic specs)
+- **brownfield** → Managing EXISTING app (tech-prescriptive specs)
+
+**Detection Types:**
+- **generic** → Standard application
+- **monorepo-service** → Service in a monorepo
+- **nx-app** → Nx workspace application
+- **turborepo-package** → Turborepo package
+- **lerna-package** → Lerna package
+
+**Based on route, this skill behaves differently!**
+
+**Examples:**
+- Monorepo Service + Greenfield → Analyze spec completeness for platform migration
+- Monorepo Service + Brownfield → Compare specs vs current implementation
+- Nx App + Greenfield → Validate specs for rebuild (framework-agnostic)
+- Nx App + Brownfield → Find gaps in current Nx/Angular implementation
 
 ---
 
-## What This Skill Does
+## Greenfield Route: Spec Completeness Analysis
 
-Uses **GitHub Spec Kit's `/speckit.analyze`** command plus additional analysis to:
+**Goal:** Validate specs are complete enough to build NEW application
 
-1. **Validate Consistency** - Check specs match implementation
-2. **Identify Gaps** - Find PARTIAL and MISSING features
-3. **Detect Inconsistencies** - Specs say one thing, code does another
-4. **Catalog Technical Debt** - Code quality, tests, documentation needs
-5. **Prioritize Implementation** - P0/P1/P2/P3 classification
-6. **Create Roadmap** - Phased implementation plan
+**NOT analyzing:** Old codebase (we're not fixing it, we're building new)
+**YES analyzing:** Spec quality, completeness, readiness
+
+### Step 1: Review Spec Completeness
+
+For each specification:
+
+```bash
+# Check each spec
+for spec in .specify/memory/specifications/*.md; do
+  echo "Analyzing: $(basename $spec)"
+
+  # Look for ambiguities
+  grep "\[NEEDS CLARIFICATION\]" "$spec" || echo "No clarifications needed"
+
+  # Check for acceptance criteria
+  grep -A 10 "Acceptance Criteria" "$spec" || echo "⚠️ No acceptance criteria"
+
+  # Check for user stories
+  grep -A 5 "User Stories" "$spec" || echo "⚠️ No user stories"
+done
+```
+
+### Step 2: Identify Clarification Needs
+
+**Common ambiguities in Greenfield specs:**
+- UI/UX details missing (what should it look like?)
+- Business rules unclear (what happens when...?)
+- Data relationships ambiguous (how do entities relate?)
+- Non-functional requirements vague (how fast? how secure?)
+
+**Mark with [NEEDS CLARIFICATION]:**
+```markdown
+### Photo Upload Feature
+- Users can upload photos [NEEDS CLARIFICATION: drag-drop or click-browse?]
+- Photos stored in cloud [NEEDS CLARIFICATION: S3, Cloudinary, or Vercel Blob?]
+- Max 10 photos [NEEDS CLARIFICATION: per fish or per tank?]
+```
+
+### Step 3: Ask About Target Tech Stack
+
+**For Greenfield, you're building NEW - need to choose stack!**
+
+```
+I've extracted the business logic into tech-agnostic specifications.
+Now we need to decide what to build the NEW application in.
+
+What tech stack would you like to use for the new implementation?
+
+Examples:
+A) Next.js 15 + React 19 + Prisma + PostgreSQL + Vercel
+B) Python FastAPI + SQLAlchemy + PostgreSQL + AWS ECS
+C) Ruby on Rails 7 + PostgreSQL + Heroku
+D) Your choice: [describe your preferred stack]
+```
+
+**Document choice** in Constitution for consistency.
+
+### Step 4: Create Implementation Roadmap
+
+**Greenfield roadmap focuses on BUILD ORDER:**
+
+```markdown
+# Greenfield Implementation Roadmap
+
+## Tech Stack Selected
+- Frontend: Next.js 15 + React 19
+- Backend: Next.js API Routes
+- Database: PostgreSQL + Prisma
+- Auth: NextAuth.js
+- Hosting: Vercel
+
+## Build Phases
+
+### Phase 1: Foundation (Week 1)
+- Set up Next.js project
+- Database schema with Prisma
+- Authentication system
+- Base UI components
+
+### Phase 2: Core Features (Week 2-3)
+- User management
+- Fish tracking
+- Tank management
+- Water quality logging
+
+### Phase 3: Advanced Features (Week 4)
+- Photo upload
+- Analytics dashboard
+- Notifications
+- Social features
+
+## All Features are ❌ MISSING
+(Greenfield = building from scratch)
+
+Ready to proceed to:
+- Step 5: Resolve clarifications
+- Step 6: Implement features in new stack
+```
+
+---
+
+## Brownfield Route: Implementation Gap Analysis
+
+**Goal:** Identify gaps in EXISTING codebase implementation
+
+**YES analyzing:** Old codebase vs specs
+**Using:** /speckit.analyze to find gaps
+
+### Step 1: Run /speckit.analyze
+
+GitHub Spec Kit's built-in validation:
+
+```bash
+> /speckit.analyze
+```
+
+**What it checks:**
+- Specifications marked ✅ COMPLETE but implementation missing
+- Implementation exists but not documented in specs
+- Inconsistencies between related specifications
+- Conflicting requirements across specs
+- Outdated implementation status
 
 ---
 
@@ -438,4 +573,24 @@ Once gap analysis is complete, proceed to:
 
 ---
 
-**Remember:** This step combines GitHub Spec Kit's automated validation with manual gap analysis to create a complete picture of what needs to be built.
+## Route Comparison: What Gap Analysis Means
+
+| Aspect | Greenfield | Brownfield |
+|--------|-----------|-----------|
+| **Analyzing** | Spec completeness | Existing code vs specs |
+| **Goal** | Validate specs ready to build NEW | Find gaps in CURRENT implementation |
+| **/speckit.analyze** | Skip (no old code to compare) | Run (compare specs to code) |
+| **Gap Definition** | Missing requirements, ambiguities | Missing features, partial implementations |
+| **Roadmap** | Build order for NEW app | Fill gaps in EXISTING app |
+| **Tech Stack** | ASK user (choosing for new) | Already decided (current stack) |
+| **All Features** | ❌ MISSING (building from scratch) | Mix of ✅⚠️❌ (some exist) |
+
+**Key Insight:**
+- **Greenfield:** Specs describe WHAT to build (old code doesn't matter) - Same for ALL detection types
+- **Brownfield:** Specs describe current reality (validate against old code) - Same for ALL detection types
+
+**Detection type doesn't change gap analysis approach** - it only affects what patterns were analyzed in Gear 2
+
+---
+
+**Remember:** Check route first! Greenfield analyzes SPECS, Brownfield analyzes IMPLEMENTATION.

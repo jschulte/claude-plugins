@@ -67,27 +67,68 @@ This skill performs deep codebase analysis and generates **9 comprehensive docum
 
 ---
 
-## Path Detection
+## Configuration Check (FIRST STEP!)
 
-**FIRST:** Check which path was selected in Step 1:
+**Load state file to check detection type and route:**
 
-```javascript
-// State file will contain:
+```bash
+# Check what kind of application we're analyzing
+DETECTION_TYPE=$(cat .stackshift-state.json | jq -r '.detection_type // .path')
+echo "Detection: $DETECTION_TYPE"
+
+# Check extraction approach
+ROUTE=$(cat .stackshift-state.json | jq -r '.route // .path')
+echo "Route: $ROUTE"
+
+# Check spec output location (Greenfield only)
+SPEC_OUTPUT=$(cat .stackshift-state.json | jq -r '.config.spec_output_location // "."')
+echo "Writing specs to: $SPEC_OUTPUT"
+
+# Create output directories if needed
+if [ "$SPEC_OUTPUT" != "." ]; then
+  mkdir -p "$SPEC_OUTPUT/docs/reverse-engineering"
+  mkdir -p "$SPEC_OUTPUT/.specify/memory/specifications"
+fi
+```
+
+**State file structure (new):**
+```json
 {
-  "path": "greenfield" | "brownfield",
-  "metadata": {
-    "pathDescription": "..."
+  "detection_type": "monorepo-service",  // What kind of app
+  "route": "greenfield",                  // How to spec it
+  "config": {
+    "spec_output_location": "~/git/my-new-app",
+    "build_location": "~/git/my-new-app",
+    "target_stack": "Next.js 15..."
   }
 }
 ```
 
-**Based on path:**
-- **Greenfield** → Use `prompts/greenfield/02-reverse-engineer-business-logic.md`
-- **Brownfield** → Use `prompts/brownfield/02-reverse-engineer-full-stack.md`
+**File write locations:**
 
-Or for manual users:
-- Check `.stackshift-state.json` for `path` field
-- Follow corresponding prompt file
+| Route | Spec Output | Where Files Go |
+|-------|-------------|----------------|
+| **Greenfield** | Custom location | `{spec_output_location}/docs/`, `{spec_output_location}/.specify/` |
+| **Greenfield** | Not set (default) | `./docs/reverse-engineering/`, `./.specify/` (current repo) |
+| **Brownfield** | Always current repo | `./docs/reverse-engineering/`, `./.specify/` |
+
+**Extraction approach based on detection + route:**
+
+| Detection Type | + Greenfield | + Brownfield |
+|----------------|--------------|--------------|
+| **Monorepo Service** | Business logic only (tech-agnostic) | Full implementation + shared packages (tech-prescriptive) |
+| **Nx App** | Business logic only (framework-agnostic) | Full Nx/Angular implementation details |
+| **Generic App** | Business logic only | Full implementation |
+
+**How it works:**
+- `detection_type` determines WHAT patterns to look for (shared packages, Nx project config, monorepo structure, etc.)
+- `route` determines HOW to document them (tech-agnostic vs tech-prescriptive)
+
+**Examples:**
+- Monorepo Service + Greenfield → Extract what the service does (not React/Express specifics)
+- Monorepo Service + Brownfield → Extract full Express routes, React components, shared utilities
+- Nx App + Greenfield → Extract business logic (not Angular specifics)
+- Nx App + Brownfield → Extract full Nx configuration, Angular components, project graph
 
 ---
 
