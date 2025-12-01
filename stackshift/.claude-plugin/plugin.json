@@ -1,6 +1,6 @@
 {
   "name": "stackshift",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Reverse engineering toolkit that transforms any application into a fully-specified, spec-driven codebase through a 6-gear process. Auto-detects app type (monorepo service, Nx app, etc.) then choose route: Greenfield (tech-agnostic for migration) or Brownfield (tech-prescriptive for maintenance). Includes Gear 6.5 validation, code review, and coverage mapping.",
   "author": {
     "name": "Jonah Schulte"
