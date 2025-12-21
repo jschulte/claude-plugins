@@ -17,7 +17,7 @@
     {
       "name": "distillery",
       "version": "1.0.0",
-      "source": "https://github.com/jschulte/distillery",
+      "source": "./distillery",
       "description": "Distill experience into expertise — An AI-powered continuous learning system that extracts patterns from completed work and automatically improves code quality through self-updating playbooks. Enables compound learning and prevents repeated mistakes."
     }
   ]
