@@ -10,9 +10,15 @@
   "plugins": [
     {
       "name": "stackshift",
-      "version": "1.7.0",
+      "version": "1.9.0",
       "source": "./stackshift",
       "description": "Reverse engineering toolkit with detection types (monorepo, nx, turborepo), dual routes (Greenfield/Brownfield/Upgrade), Gear 6.5 validation, batch processing, and cruise control. Achieves 100% spec coverage with GitHub Spec Kit integration."
+    },
+    {
+      "name": "distillery",
+      "version": "1.0.0",
+      "source": "https://github.com/jschulte/distillery",
+      "description": "Distill experience into expertise — An AI-powered continuous learning system that extracts patterns from completed work and automatically improves code quality through self-updating playbooks. Enables compound learning and prevents repeated mistakes."
     }
   ]
 }
