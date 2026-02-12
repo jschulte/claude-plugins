@@ -51,8 +51,6 @@ Uses **GitHub Spec Kit's implementation workflow** to systematically build featu
 ### Context A: Handoff (After Reverse Engineering)
 **When:** Just completed Gears 1-5, on main branch, gaps identified
 **What happens:** Handoff procedure (celebrate, explain transition, offer feature branch setup)
-**See:** [operations/handoff.md](operations/handoff.md)
-
 ### Context B: Standard Implementation (Ongoing)
 **When:** On feature branch (002-*, 003-*), working on specific feature
 **What happens:** Standard GitHub Spec Kit implementation workflow
@@ -152,8 +150,6 @@ Based on implementation plan in `specs/user-authentication-frontend.md`
 - [ ] Error messages displayed clearly
 ```
 
-See [operations/generate-tasks.md](operations/generate-tasks.md)
-
 ### Step 3: Implement Feature with /speckit.implement
 
 Use `/speckit.implement` to execute the implementation plan:
@@ -204,8 +200,6 @@ user-authentication.md: ⚠️ PARTIAL → ✅ COMPLETE
 
 Implementation complete!
 ```
-
-See [operations/use-speckit-implement.md](operations/use-speckit-implement.md)
 
 ### Step 4: Validate Implementation
 
@@ -570,7 +564,7 @@ Now let's create a visual coverage map showing the relationship between your spe
 # Generate coverage map
 ```
 
-I'll analyze all specs in `.specify/memory/specifications/` or `specs/` and create:
+I'll analyze all specs in `.specify/specs/` and create:
 
 1. **ASCII box diagrams** - Visual map of each spec's files
 2. **Reverse index** - Which spec(s) cover each file

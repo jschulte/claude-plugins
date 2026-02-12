@@ -8,22 +8,18 @@ Internal guidelines for Claude when using RE Toolkit skills.
 
 When a skill completes, automatically update the workflow state:
 
-```javascript
-// After completing a step
-const { exec } = require('child_process');
-exec('node ${CLAUDE_PLUGIN_ROOT}/scripts/state-manager.js complete <step-id>');
+```bash
+# After completing a step, update the state file directly
+jq '.completedSteps += ["<step-id>"] | .currentStep = "<next-step>" | .updated = (now | todate)' .stackshift-state.json > tmp.json && mv tmp.json .stackshift-state.json
 ```
 
 ### Checking Progress
 
 Before starting a skill, check current progress:
 
-```javascript
-// Get current status
-exec('node ${CLAUDE_PLUGIN_ROOT}/scripts/state-manager.js status', (err, stdout) => {
-  const status = JSON.parse(stdout);
-  // Use status to determine next steps
-});
+```bash
+# Get current status by reading the state file directly
+cat .stackshift-state.json | jq '{currentStep, completedSteps, auto_mode: .auto_mode}'
 ```
 
 ### State File Location

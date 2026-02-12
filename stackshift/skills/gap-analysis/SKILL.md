@@ -60,7 +60,7 @@ For each specification:
 
 ```bash
 # Check each spec
-for spec in .specify/memory/specifications/*.md; do
+for spec in .specify/specs/*/spec.md; do
   echo "Analyzing: $(basename $spec)"
 
   # Look for ambiguities
@@ -158,41 +158,94 @@ Ready to proceed to:
 **Goal:** Identify gaps in EXISTING codebase implementation
 
 **YES analyzing:** Old codebase vs specs
-**Using:** /speckit.analyze to find gaps
+**Using:** AST-powered analysis as primary method, /speckit.analyze as fallback
 
-### Step 1: Run /speckit.analyze
+**IMPORTANT**: You MUST run the AST analysis tool - don't just read the instructions!
 
-GitHub Spec Kit's built-in validation:
+### Step 1: Verify Prerequisites
+
+**CRITICAL:** Check if prerequisite scripts are installed (needed for fallback):
+
+```bash
+# Check for scripts (used by /speckit.analyze fallback)
+if [ ! -f .specify/scripts/bash/check-prerequisites.sh ]; then
+  echo "GitHub Spec Kit scripts not found - /speckit.analyze fallback unavailable"
+  echo "AST analysis will be the sole analysis method"
+fi
+```
+
+### Step 2a: Run AST-Powered Analysis (PRIMARY METHOD)
+
+**ACTION REQUIRED**: Run the AST analysis for deep code inspection:
+
+```bash
+# Run AST-powered roadmap generation (includes gap analysis)
+node ~/stackshift/scripts/run-ast-analysis.mjs roadmap . --format=markdown
+```
+
+**What AST analysis provides** (primary capabilities):
+- Function signature verification (not just "exists")
+- Stub detection (functions returning placeholder text)
+- Missing parameters detection
+- Business logic pattern analysis
+- Test coverage gaps
+- Confidence scoring (0-100%)
+- Detailed roadmap with phases, priorities, and effort estimates
+
+**This IS the primary gap analysis method.** It provides deeper, more accurate analysis than spec-level comparison alone.
+
+### Step 2b: Run /speckit.analyze (FALLBACK)
+
+**Only if AST analysis fails or is unavailable**, fall back to GitHub Spec Kit's validation:
 
 ```bash
 > /speckit.analyze
 ```
 
 **What it checks:**
-- Specifications marked ✅ COMPLETE but implementation missing
+- Specifications marked COMPLETE but implementation missing
 - Implementation exists but not documented in specs
 - Inconsistencies between related specifications
 - Conflicting requirements across specs
 - Outdated implementation status
+
+**If this command also fails with "Script not found"**, the scripts weren't installed. Use Step 2c instead.
+
+### Step 2c: Manual Gap Analysis (last resort if both methods unavailable)
+
+If both AST analysis and `/speckit.analyze` are unavailable, do manual analysis:
+
+```bash
+# For each spec, check implementation status
+for spec in .specify/specs/*/spec.md; do
+  feature=$(dirname "$spec" | xargs basename)
+  echo "Analyzing: $feature"
+
+  # Extract status from spec
+  status=$(grep "^## Status" "$spec" -A 1 | tail -1)
+  echo "  Status: $status"
+
+  # Look for [NEEDS CLARIFICATION] markers
+  clarifications=$(grep -c "\[NEEDS CLARIFICATION\]" "$spec" 2>/dev/null || echo "0")
+  echo "  Clarifications needed: $clarifications"
+
+  echo ""
+done
+```
+
+This is the least thorough option and should only be used as a last resort.
 
 ---
 
 ## Process Overview
 
-### Step 1: Run /speckit.analyze
+### Step 1: Verify Prerequisites
 
-GitHub Spec Kit's built-in validation:
+Check that AST analysis scripts and GitHub Spec Kit scripts are available (see above).
 
-```bash
-> /speckit.analyze
-```
+### Step 2: Run Analysis
 
-**What it checks:**
-- Specifications marked ✅ COMPLETE but implementation missing
-- Implementation exists but not documented in specs
-- Inconsistencies between related specifications
-- Conflicting requirements across specs
-- Outdated implementation status
+Run AST analysis first (primary method). If it fails, fall back to `/speckit.analyze`. If that also fails, use manual analysis.
 
 **Output example:**
 ```
@@ -223,11 +276,9 @@ Summary:
 - 1 orphaned implementation
 ```
 
-See [operations/run-speckit-analyze.md](operations/run-speckit-analyze.md)
-
 ### Step 2: Detailed Gap Analysis
 
-Expand on `/speckit.analyze` findings with deeper analysis:
+Expand on AST analysis findings with deeper analysis:
 
 #### A. Review PARTIAL Features
 
@@ -263,8 +314,6 @@ Mark ambiguous areas with `[NEEDS CLARIFICATION]`:
 - Undefined behavior
 - Unspecified constraints
 
-See [operations/detailed-gap-analysis.md](operations/detailed-gap-analysis.md)
-
 ### Step 3: Prioritize Implementation
 
 Classify gaps by priority:
@@ -291,8 +340,6 @@ Classify gaps by priority:
 - Future enhancements
 - Polish and refinements
 - Non-critical optimizations
-
-See [operations/prioritization.md](operations/prioritization.md)
 
 ### Step 4: Create Implementation Roadmap
 
@@ -323,7 +370,7 @@ Create `docs/gap-analysis-report.md` (supplementing Spec Kit's output):
 # Gap Analysis Report
 
 **Date:** [Current Date]
-**Based on:** /speckit.analyze + manual review
+**Based on:** AST analysis (primary) + /speckit.analyze (fallback) + manual review
 
 ---
 
@@ -542,7 +589,8 @@ After gap analysis, leverage Spec Kit commands:
 
 After running this skill, you should have:
 
-- ✅ `/speckit.analyze` results reviewed
+- ✅ AST analysis results reviewed (primary method)
+- ✅ `/speckit.analyze` results reviewed (if used as fallback)
 - ✅ All inconsistencies documented
 - ✅ PARTIAL features analyzed (what exists vs missing)
 - ✅ MISSING features categorized
@@ -565,11 +613,12 @@ Once gap analysis is complete, proceed to:
 
 ## Technical Notes
 
-- `/speckit.analyze` is run first for automated checks
-- Manual analysis supplements with deeper insights
-- Gap report complements Spec Kit's output
+- AST analysis is the primary method for gap analysis and code inspection
+- `/speckit.analyze` is a fallback when AST analysis is unavailable
+- Manual analysis supplements with deeper insights when both are unavailable
+- Gap report complements AST analysis output
 - Keep both `.specify/memory/` specs and gap report updated
-- Re-run `/speckit.analyze` frequently to track progress
+- Re-run AST analysis frequently to track progress
 
 ---
 
@@ -579,7 +628,8 @@ Once gap analysis is complete, proceed to:
 |--------|-----------|-----------|
 | **Analyzing** | Spec completeness | Existing code vs specs |
 | **Goal** | Validate specs ready to build NEW | Find gaps in CURRENT implementation |
-| **/speckit.analyze** | Skip (no old code to compare) | Run (compare specs to code) |
+| **AST Analysis** | Skip (no old code to compare) | Run (primary gap analysis method) |
+| **/speckit.analyze** | Skip (no old code to compare) | Fallback (if AST unavailable) |
 | **Gap Definition** | Missing requirements, ambiguities | Missing features, partial implementations |
 | **Roadmap** | Build order for NEW app | Fill gaps in EXISTING app |
 | **Tech Stack** | ASK user (choosing for new) | Already decided (current stack) |

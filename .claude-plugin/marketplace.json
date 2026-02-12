@@ -10,9 +10,9 @@
   "plugins": [
     {
       "name": "stackshift",
-      "version": "1.9.0",
+      "version": "2.0.0",
       "source": "./stackshift",
-      "description": "Reverse engineering toolkit with detection types (monorepo, nx, turborepo), dual routes (Greenfield/Brownfield/Upgrade), Gear 6.5 validation, batch processing, and cruise control. Achieves 100% spec coverage with GitHub Spec Kit integration."
+      "description": "Reverse engineering toolkit with manual control — shift gears in your codebase. Analyze, document, and spec-drive any project through a 6-gear process. Dual workflow: Greenfield (extract for rebuild) or Brownfield (manage existing). Includes BMAD synthesis, architecture generation, multi-repo reimagine, and incremental doc refresh."
     },
     {
       "name": "distillery",

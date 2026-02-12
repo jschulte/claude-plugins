@@ -146,30 +146,52 @@ fi
 
 **IMPORTANT**: This skill uses automated spec generation tools from F002.
 
-### Step 1: Call the MCP Tool
+### Step 1: Install GitHub Spec Kit Scripts
 
-Run the `stackshift_create_specs` MCP tool to automatically generate ALL specifications:
+**CRITICAL FIRST STEP:** Install the prerequisite scripts needed by `/speckit.*` commands:
 
-**This tool will**:
-- Parse `docs/reverse-engineering/functional-specification.md`
-- Extract EVERY feature (complete, partial, missing)
-- Generate constitution and ALL feature specs
-- Create implementation plans for incomplete features
-
-**Usage**:
-```typescript
-// Call the MCP tool
-const result = await mcp.callTool('stackshift_create_specs', {
-  directory: process.cwd()
-});
-
-// The tool will:
-// 1. Read functional-specification.md
-// 2. Create specs for ALL features (not just gaps!)
-// 3. Mark implementation status (✅/⚠️/❌)
-// 4. Generate plans for PARTIAL/MISSING features
-// 5. Return summary showing complete coverage
+```bash
+# Install Spec Kit scripts to enable /speckit.* commands
+if [ -f ~/git/stackshift/scripts/install-speckit-scripts.sh ]; then
+  ~/git/stackshift/scripts/install-speckit-scripts.sh .
+elif [ -f ~/stackshift/scripts/install-speckit-scripts.sh ]; then
+  ~/stackshift/scripts/install-speckit-scripts.sh .
+else
+  # Download directly if script not available
+  mkdir -p .specify/scripts/bash
+  BASE_URL="https://raw.githubusercontent.com/github/spec-kit/main/scripts"
+  curl -sSLf "$BASE_URL/bash/check-prerequisites.sh" -o .specify/scripts/bash/check-prerequisites.sh
+  curl -sSLf "$BASE_URL/bash/setup-plan.sh" -o .specify/scripts/bash/setup-plan.sh
+  curl -sSLf "$BASE_URL/bash/create-new-feature.sh" -o .specify/scripts/bash/create-new-feature.sh
+  curl -sSLf "$BASE_URL/bash/update-agent-context.sh" -o .specify/scripts/bash/update-agent-context.sh
+  curl -sSLf "$BASE_URL/bash/common.sh" -o .specify/scripts/bash/common.sh
+  chmod +x .specify/scripts/bash/*.sh
+  echo "✅ Downloaded GitHub Spec Kit scripts"
+fi
 ```
+
+**Why this is needed:**
+- `/speckit.analyze` requires `scripts/bash/check-prerequisites.sh`
+- `/speckit.implement` requires `scripts/bash/check-prerequisites.sh`
+- `/speckit.plan` requires `scripts/bash/setup-plan.sh`
+- `/speckit.specify` requires `scripts/bash/create-new-feature.sh`
+
+**Without these scripts, Gear 4 (Gap Analysis) will fail when trying to run `/speckit.analyze`!**
+
+### Step 2: Generate Specifications
+
+Use the manual reconciliation approach to generate all specifications:
+
+```bash
+# Use the web reconciliation prompt to create all specs with 100% coverage
+cat web/reconcile-specs.md
+```
+
+This will:
+1. Parse `docs/reverse-engineering/functional-specification.md`
+2. Extract EVERY feature (complete, partial, missing)
+3. Generate constitution and ALL feature specs
+4. Create implementation plans for incomplete features
 
 **Expected output**:
 - Constitution created
@@ -177,7 +199,7 @@ const result = await mcp.callTool('stackshift_create_specs', {
 - 100% feature coverage
 - Implementation plans for incomplete features
 
-### Step 2: Verify Success
+### Step 3: Verify Success
 
 After the tool completes, verify:
 1. `.specify/memory/constitution.md` exists
@@ -226,8 +248,6 @@ This creates:
 
 **Note:** GitHub Spec Kit uses `.specify/specs/NNN-feature-name/` directory structure
 
-See [operations/init-speckit.md](operations/init-speckit.md)
-
 ### Step 2: Generate Constitution
 
 From `docs/reverse-engineering/functional-specification.md`, create `.specify/memory/constitution.md`:
@@ -247,11 +267,9 @@ After generating initial constitution, user can run:
 To refine and update the constitution interactively
 ```
 
-See [operations/generate-constitution.md](operations/generate-constitution.md)
-
 ### Step 3: Generate Specifications
 
-Transform `docs/reverse-engineering/functional-specification.md` into individual feature specs in `specs/FEATURE-ID/`:
+Transform `docs/reverse-engineering/functional-specification.md` into individual feature specs in `.specify/specs/FEATURE-ID/`:
 
 **Recommended:** Use the Task tool with `subagent_type=stackshift:technical-writer` for efficient, parallel spec generation.
 
@@ -322,13 +340,11 @@ After generating initial specs, user can run:
 To create additional specifications or refine existing ones
 ```
 
-See [operations/generate-specifications.md](operations/generate-specifications.md)
-
 ### Step 4: Generate Implementation Plans
 
 For each **PARTIAL** or **MISSING** feature, create `plan.md` in the feature's directory:
 
-**Location:** `specs/FEATURE-ID/plan.md`
+**Location:** `.specify/specs/FEATURE-ID/plan.md`
 
 **Format:**
 
@@ -392,8 +408,6 @@ After generating initial plans, user can run:
 To create or refine implementation plans
 ```
 
-See [operations/generate-plans.md](operations/generate-plans.md)
-
 ### Step 5: Mark Implementation Status
 
 In each specification, clearly mark what's implemented vs missing:
@@ -456,21 +470,20 @@ After this skill completes:
 ├── memory/
 │   └── constitution.md                    # Project principles
 ├── templates/
-└── scripts/
-
-specs/                                     # Feature directories
-├── 001-user-authentication/
-│   ├── spec.md                           # ⚠️ PARTIAL
-│   └── plan.md                           # Implementation plan
-├── 002-fish-management/
-│   ├── spec.md                           # ⚠️ PARTIAL
-│   └── plan.md
-├── 003-analytics-dashboard/
-│   ├── spec.md                           # ❌ MISSING
-│   └── plan.md
-└── 004-photo-upload/
-    ├── spec.md                           # ⚠️ PARTIAL
-    └── plan.md
+├── scripts/
+└── specs/                                 # Feature directories
+    ├── 001-user-authentication/
+    │   ├── spec.md                       # ⚠️ PARTIAL
+    │   └── plan.md                       # Implementation plan
+    ├── 002-fish-management/
+    │   ├── spec.md                       # ⚠️ PARTIAL
+    │   └── plan.md
+    ├── 003-analytics-dashboard/
+    │   ├── spec.md                       # ❌ MISSING
+    │   └── plan.md
+    └── 004-photo-upload/
+        ├── spec.md                       # ⚠️ PARTIAL
+        └── plan.md
 
 docs/reverse-engineering/  # Keep original docs for reference
 ├── functional-specification.md
@@ -515,10 +528,10 @@ If `greenfield_location` is an absolute path (e.g., `~/git/my-new-app`):
 | Original Doc | Spec Kit Artifact | Location |
 |-------------|------------------|----------|
 | functional-specification.md | constitution.md | `.specify/memory/` |
-| functional-specification.md | Individual feature specs | `specs/` |
+| functional-specification.md | Individual feature specs | `.specify/specs/` |
 | data-architecture.md | Technical details in specs | Embedded in specifications |
 | operations-guide.md | Operational notes in constitution | `.specify/memory/constitution.md` |
-| technical-debt-analysis.md | Implementation plans | `specs/` |
+| technical-debt-analysis.md | Implementation plans | `.specify/specs/` |
 
 **Keep both:**
 - `docs/reverse-engineering/` - Comprehensive reference docs
@@ -534,7 +547,7 @@ If `greenfield_location` is an absolute path (e.g., `~/git/my-new-app`):
 
 1. **Scan specs directory**:
    ```bash
-   find specs -name "spec.md" -type f | sort
+   find .specify/specs -name "spec.md" -type f | sort
    ```
 
 2. **Identify incomplete features**:
@@ -550,7 +563,7 @@ If `greenfield_location` is an absolute path (e.g., `~/git/my-new-app`):
      model: 'sonnet',
      description: `Create plan for ${featureName}`,
      prompt: `
-       Read: specs/${featureId}/spec.md
+       Read: .specify/specs/${featureId}/spec.md
 
        Generate implementation plan following /speckit.plan template:
        - Assess current state (what exists vs missing)
@@ -560,7 +573,7 @@ If `greenfield_location` is an absolute path (e.g., `~/git/my-new-app`):
        - Identify risks and mitigations
        - Define success criteria
 
-       Save to: specs/${featureId}/plan.md
+       Save to: .specify/specs/${featureId}/plan.md
 
        Target: 300-500 lines, detailed but not prescriptive
      `
@@ -581,7 +594,7 @@ If `greenfield_location` is an absolute path (e.g., `~/git/my-new-app`):
 
 1. **Scan for plans**:
    ```bash
-   find specs -name "plan.md" -type f | sort
+   find .specify/specs -name "plan.md" -type f | sort
    ```
 
 2. **Generate tasks in parallel** (3 at a time - slower due to length):
@@ -592,8 +605,8 @@ If `greenfield_location` is an absolute path (e.g., `~/git/my-new-app`):
      model: 'sonnet',
      description: `Create tasks for ${featureName}`,
      prompt: `
-       Read: specs/${featureId}/spec.md
-       Read: specs/${featureId}/plan.md
+       Read: .specify/specs/${featureId}/spec.md
+       Read: .specify/specs/${featureId}/plan.md
 
        Generate COMPREHENSIVE task breakdown:
        - Break into 5-10 logical phases
@@ -607,7 +620,7 @@ If `greenfield_location` is an absolute path (e.g., `~/git/my-new-app`):
 
        Target: 300-500 lines (be thorough!)
 
-       Save to: specs/${featureId}/tasks.md
+       Save to: .specify/specs/${featureId}/tasks.md
      `
    });
    ```
@@ -644,7 +657,7 @@ After running this skill, you should have:
 **Thoroughness Level 1 (Specs Only):**
 - ✅ `.specify/` directory initialized
 - ✅ `constitution.md` created with project principles
-- ✅ Individual feature specifications in `specs/`
+- ✅ Individual feature specifications in `.specify/specs/`
 - ✅ Implementation status clearly marked (✅/⚠️/❌)
 - ✅ `/speckit.*` slash commands available
 

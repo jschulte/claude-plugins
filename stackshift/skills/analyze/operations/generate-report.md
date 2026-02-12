@@ -39,6 +39,25 @@ Example:
 
 ---
 
+## StackShift Configuration
+
+- **Route:** [Greenfield / Brownfield]
+- **Implementation Framework:** [GitHub Spec Kit / BMAD Method]
+- **Transmission:** [Manual / Cruise Control]
+- **Brownfield Mode:** [Standard / Upgrade] _(if Brownfield)_
+- **Spec Output Location:** [Current repo / Separate location] _(if Greenfield)_
+
+**What this means:**
+- [Brief explanation based on selections]
+
+Example (Spec Kit):
+> Using GitHub Spec Kit for brownfield maintenance. Specs will be created in `.specify/` and implementation will use `/speckit.implement` commands.
+
+Example (BMAD):
+> Using BMAD Method for enterprise-scale development. Documentation will be created in `docs/` and handed off to BMAD's `*workflow-init` for agent-driven implementation.
+
+---
+
 ## Technology Stack
 
 ### Primary Language

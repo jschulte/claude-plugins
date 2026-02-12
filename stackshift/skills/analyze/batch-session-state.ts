@@ -46,6 +46,10 @@ function findBatchSessionFile(startDir: string = process.cwd()): string | null {
     if (fs.existsSync(batchSessionPath)) {
       return batchSessionPath;
     }
+    // Stop at git root to prevent path traversal beyond project
+    if (fs.existsSync(path.join(currentDir, '.git'))) {
+      return null;
+    }
     currentDir = path.dirname(currentDir);
   }
 

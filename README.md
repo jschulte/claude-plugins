@@ -6,16 +6,19 @@
 
 ## Available Plugins
 
-### 🚗 StackShift (v1.9.0)
+### 🚗 StackShift (v2.0.0)
 
-**Reverse engineering toolkit that transforms applications into spec-driven projects**
+**Reverse engineering toolkit — shift gears in your codebase**
 
 - **Repository:** https://github.com/jschulte/stackshift
 - **Features:**
   - 6-gear reverse engineering process
-  - Dual workflow: Greenfield (rebuild in new stack) or Brownfield (manage existing)
+  - Dual workflow: Greenfield (extract for rebuild) or Brownfield (manage existing)
+  - BMAD synthesis (PRD, Architecture, Epics, UX Design)
+  - Architecture generation with Mermaid diagrams and ADRs
+  - Multi-repo reimagine and capability mapping
+  - Incremental doc refresh from git changes
   - Cruise control automatic mode
-  - Works with Claude Code, Web, VSCode/Copilot
   - GitHub Spec Kit integration
 
 **Start in reverse (engineering), shift through 6 gears, cruise into spec-driven development!** 🚗💨

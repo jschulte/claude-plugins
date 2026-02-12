@@ -1,7 +1,7 @@
 {
   "name": "stackshift",
-  "version": "1.9.0",
-  "description": "Reverse engineering toolkit that transforms any application into a fully-specified, spec-driven codebase through a 6-gear process. Auto-detects app type (monorepo service, Nx app, etc.) then choose route: Greenfield (tech-agnostic for migration) or Brownfield (tech-prescriptive for maintenance). Includes Gear 6.5 validation, code review, and coverage mapping.",
+  "version": "2.0.0",
+  "description": "Reverse engineering toolkit with manual control — shift gears in your codebase. Analyze, document, and spec-drive any project through a 6-gear process. Dual workflow: Greenfield (extract for rebuild) or Brownfield (manage existing). Includes BMAD synthesis, architecture generation, multi-repo reimagine, and incremental doc refresh.",
   "author": {
     "name": "Jonah Schulte"
   },

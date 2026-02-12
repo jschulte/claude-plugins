@@ -249,7 +249,7 @@ For each answer:
 
 ## Technical Notes
 
-- Use the AskUserQuestion tool for structured Q&A
+- Ask questions conversationally and collect answers through natural dialogue
 - Group related questions together
 - Prioritize P0 clarifications first
 - Keep a running list of resolved items

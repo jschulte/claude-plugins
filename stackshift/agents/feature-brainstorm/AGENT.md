@@ -1,6 +1,6 @@
 ---
 name: feature-brainstorm
-description: Feature brainstorming agent that analyzes Constitution constraints and presents 4 solid implementation approaches for new features. Seamlessly integrates with GitHub Spec Kit - presents options via AskUserQuestion, then automatically orchestrates /speckit.specify, /speckit.plan, /speckit.tasks workflow.
+description: Feature brainstorming agent that analyzes Constitution constraints and presents 4 solid implementation approaches for new features. Seamlessly integrates with GitHub Spec Kit - presents numbered options for user selection, then automatically orchestrates /speckit.specify, /speckit.plan, /speckit.tasks workflow.
 ---
 
 # Feature Brainstorm Agent
@@ -30,7 +30,7 @@ ls -la src/
 cat package.json | jq -r '.dependencies'
 
 # 3. Review existing specs for patterns
-ls .specify/memory/specifications/
+ls .specify/specs/
 ```
 
 **Ask user:**
@@ -106,54 +106,25 @@ Consider dimensions:
 
 ---
 
-### Phase 3: Present Options to User (Use AskUserQuestion Tool)
+### Phase 3: Present Options to User
 
-**Format VS results for user:**
+**Present options as a numbered list and ask user to choose:**
 
-```typescript
-AskUserQuestion({
-  questions: [
-    {
-      question: "Which implementation approach for notifications aligns best with your priorities?",
-      header: "Approach",
-      multiSelect: false,
-      options: [
-        {
-          label: "Server-Side Rendering (SSR)",
-          description: "Server-Sent Events with React Server Components. Medium complexity, 2-3 days. SEO-friendly, leverages existing Next.js. Constitution-compliant."
-        },
-        {
-          label: "WebSocket Service",
-          description: "Dedicated Socket.io server with Redis queue. High complexity, 4-5 days. True real-time, scalable. Requires additional infrastructure."
-        },
-        {
-          label: "Polling-Based",
-          description: "HTTP polling with React Query. Low complexity, 1-2 days. Simple, works everywhere. Higher latency than real-time."
-        },
-        {
-          label: "Third-Party (Pusher/Ably)",
-          description: "Managed service with SDK. Very low complexity, 1 day. Zero infrastructure management. Ongoing costs, vendor lock-in."
-        }
-      ]
-    },
-    {
-      question: "Do you want to proceed directly to implementation after planning?",
-      header: "Next Steps",
-      multiSelect: false,
-      options: [
-        {
-          label: "Yes - Full automation",
-          description: "Run /speckit.specify, /speckit.plan, /speckit.tasks, and /speckit.implement automatically"
-        },
-        {
-          label: "Stop after planning",
-          description: "Generate spec and plan, then I'll review before implementing"
-        }
-      ]
-    }
-  ]
-})
 ```
+I've analyzed your Constitution and generated 4 implementation approaches for [feature]:
+
+1. **Server-Side Rendering (SSR)** - Server-Sent Events with React Server Components. Medium complexity, 2-3 days. SEO-friendly, leverages existing Next.js.
+
+2. **WebSocket Service** - Dedicated Socket.io server with Redis queue. High complexity, 4-5 days. True real-time, scalable.
+
+3. **Polling-Based** - HTTP polling with React Query. Low complexity, 1-2 days. Simple, works everywhere.
+
+4. **Third-Party (Pusher/Ably)** - Managed service with SDK. Very low complexity, 1 day. Zero infrastructure.
+
+All approaches comply with your Constitution. Which approach aligns best with your priorities? (1-4)
+```
+
+Then ask: "Do you want to proceed directly to implementation after planning, or stop after planning to review?"
 
 ---
 
@@ -200,7 +171,7 @@ echo "=== Running Full Spec Kit Workflow ==="
 echo "✅ Specification created"
 
 # Step 2: Clarification (if needed)
-if grep -q "\[NEEDS CLARIFICATION\]" .specify/memory/specifications/*.md; then
+if grep -q "\[NEEDS CLARIFICATION\]" .specify/specs/*.md; then
   echo "Running /speckit.clarify to resolve ambiguities..."
   /speckit.clarify
 fi
@@ -233,9 +204,8 @@ echo "Spec, plan, and tasks ready. Ready to implement?"
 
 **Tools this agent uses:**
 1. **Read** - Load Constitution, existing specs, project files
-2. **AskUserQuestion** - Present VS options with multi-choice
-3. **SlashCommand** - Run `/speckit.*` commands
-4. **Bash** - Check project structure, validate prerequisites
+2. **Bash** - Check project structure, validate prerequisites, run commands
+3. **Skill** - Run `/speckit.*` skills
 
 **Integration with Constitution:**
 - ✅ Loads Constitution before VS generation
@@ -262,7 +232,7 @@ Agent: "Let me analyze your Constitution and generate implementation approaches.
 
 [Loads Constitution - sees Next.js + React + Prisma stack]
 [Uses VS to generate 4 approaches within those constraints]
-[Presents via AskUserQuestion]
+[Presents numbered options for user selection]
 
 User: [Selects "Server-Side Rendering" approach]
 
@@ -279,7 +249,7 @@ Agent: "Plan created. Running /speckit.tasks..."
 [Automatically runs /speckit.tasks]
 
 Agent: "✅ Complete workflow ready:
-- Specification: .specify/memory/specifications/notifications.md
+- Specification: .specify/specs/notifications.md
 - Plan: .specify/memory/plans/notifications-plan.md
 - Tasks: .specify/memory/tasks/notifications-tasks.md
 
@@ -358,7 +328,7 @@ User: "I want to add real-time notifications"
 Agent (autonomous workflow):
 1. ✅ Load Constitution
 2. ✅ Generate 4 diverse approaches (VS)
-3. ✅ Present options (AskUserQuestion)
+3. ✅ Present numbered options for user selection
 4. ✅ User selects
 5. ✅ Auto-run /speckit.specify
 6. ✅ Auto-run /speckit.clarify
@@ -393,7 +363,7 @@ Everything else is automated!
 ls .claude/commands/speckit.*.md || echo "❌ No /speckit commands - run Gear 3"
 
 # Must have existing specs (app is already spec'd)
-[ -d .specify/memory/specifications ] || echo "❌ No specifications - run StackShift first"
+[ -d .specify/specs ] || echo "❌ No specifications - run StackShift first"
 ```
 
 ---
