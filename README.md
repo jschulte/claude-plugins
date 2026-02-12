@@ -6,7 +6,7 @@
 
 ## Available Plugins
 
-### 🚗 StackShift (v2.0.0)
+### 🚗 StackShift (v2.1.0)
 
 **Reverse engineering toolkit — shift gears in your codebase**
 
@@ -14,6 +14,7 @@
 - **Features:**
   - 6-gear reverse engineering process
   - Dual workflow: Greenfield (extract for rebuild) or Brownfield (manage existing)
+  - **Ecosystem discovery** — start with one repo, auto-discover all related repos
   - BMAD synthesis (PRD, Architecture, Epics, UX Design)
   - Architecture generation with Mermaid diagrams and ADRs
   - Multi-repo reimagine and capability mapping
