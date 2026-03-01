@@ -6,7 +6,7 @@
 
 ## Available Plugins
 
-### 🚗 StackShift (v2.1.0)
+### 🚗 StackShift (v2.3.0)
 
 **Reverse engineering toolkit — shift gears in your codebase**
 

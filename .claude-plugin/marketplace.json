@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "stackshift",
-      "version": "2.1.0",
+      "version": "2.3.0",
       "source": "./stackshift",
       "description": "Reverse engineering toolkit with manual control — shift gears in your codebase. Analyze, document, and spec-drive any project through a 6-gear process. Dual workflow: Greenfield (extract for rebuild) or Brownfield (manage existing). Includes BMAD synthesis, architecture generation, multi-repo reimagine, and incremental doc refresh."
     },
