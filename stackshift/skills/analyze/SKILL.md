@@ -115,20 +115,20 @@ fi
 **If batch session exists:**
 1. Walk up directory tree to find `.stackshift-batch-session.json`
 2. Load answers from found batch session file
-3. Show: "Using batch session configuration: route=osiris, spec_output=~/git/specs, ..."
+3. Show: "Using batch session configuration: route=brownfield, spec_output=~/git/specs, ..."
 4. Skip all questions below
 5. Proceed directly to analysis with pre-configured answers
 6. Save answers to local `.stackshift-state.json` as usual
 
 **Example directory structure:**
 ```
-~/git/osiris/
+~/git/my-platform/
   ├── .stackshift-batch-session.json  ← Batch session here
-  ├── ws-vehicle-details/
+  ├── service-catalog/
   │   └── [agent working here finds parent session]
-  ├── ws-hours/
+  ├── service-auth/
   │   └── [agent working here finds parent session]
-  └── ws-contact/
+  └── service-notifications/
       └── [agent working here finds parent session]
 ```
 
@@ -254,12 +254,19 @@ D) Architecture Only
    → Includes Mermaid diagrams, ADRs, infrastructure recommendations
    → Best for: when you already know what to build, need architecture
 
+E) Portable Component Extraction
+   → Extracts tech-agnostic epics + component spec
+   → Abstract personas ([User], [Admin], [System])
+   → Output can be dropped into ANY BMAD project
+   → Best for: reusable components, cross-project migration
+
 After StackShift extracts documentation (Gear 2):
 - All frameworks get the same 11 docs in docs/reverse-engineering/
 - Spec Kit: Gears 3-6 create .specify/ specs, use /speckit.implement
 - BMAD Auto-Pilot: /stackshift.bmad-synthesize generates BMAD artifacts automatically
 - BMAD: Skip to Gear 6, hand off to *workflow-init with rich context
 - Architecture Only: /stackshift.architect generates architecture.md with your constraints
+- Portable Extraction: /stackshift.portable-extract generates portable epics + component spec
 ```
 
 **Question 3: Brownfield Mode** _(If Brownfield selected)_
@@ -450,7 +457,7 @@ All answers are stored in `.stackshift-state.json` and guide the entire workflow
 {
   "detection_type": "monorepo-service",  // What kind of app: monorepo-service, nx-app, generic, etc.
   "route": "greenfield",                  // How to spec it: greenfield or brownfield
-  "implementation_framework": "speckit",  // speckit, bmad-autopilot, bmad, or architect-only
+  "implementation_framework": "speckit",  // speckit, bmad-autopilot, bmad, architect-only, or portable-extract
   "config": {
     "spec_output_location": "~/git/my-new-app",  // Where to write specs/docs
     "build_location": "~/git/my-new-app",         // Where to build new code (Gear 6)
@@ -498,6 +505,8 @@ Based on answers, ask follow-up questions conditionally:
 - If BMAD + cruise control: Gear 6 hands off to BMAD instead of /speckit.implement
 - If Architecture Only selected: Skip spec thoroughness, clarifications, implementation scope questions
 - If Architecture Only + cruise control: After Gear 2, runs /stackshift.architect
+- If Portable Extraction selected: Skip spec thoroughness, clarifications, implementation scope questions
+- If Portable Extraction + cruise control: After Gear 2, runs /stackshift.portable-extract
 
 **For custom folder name:** Use free-text input or accept default.
 

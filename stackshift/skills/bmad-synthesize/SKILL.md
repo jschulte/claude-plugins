@@ -8,15 +8,26 @@ description: Auto-generate BMAD artifacts (PRD, Architecture, Epics, UX Design) 
 **Auto-generate BMAD planning artifacts from StackShift reverse-engineering documentation.**
 
 **Estimated Time:** 10-30 minutes (depending on mode)
-**Prerequisites:** Gear 2 (Reverse Engineer) completed with all 11 docs
+**Prerequisites:** Gear 2 (Reverse Engineer) completed with 9+ docs
 **Output:** 4 BMAD artifacts in `_bmad-output/planning-artifacts/`
+
+---
+
+## Compatibility
+
+| Reverse Engineer Version | Docs Produced | Coverage |
+|---|---|---|
+| v2.0+ (11 docs) | Full set | 100% |
+| v1.x (9 docs) | Missing business-context, decision-rationale | ~85% average |
+
+Both are fully supported. With 9 docs, some sections will use inferred content from related docs, clearly marked with `[INFERRED FROM: source-doc]`.
 
 ---
 
 ## When to Use This Skill
 
 Use this skill when:
-- Gear 2 has generated all 11 reverse-engineering docs
+- Gear 2 has generated 9+ reverse-engineering docs
 - You want BMAD artifacts without running the full BMAD conversation flow
 - You chose `bmad-autopilot` as the implementation framework in Gear 1
 - You want to convert existing reverse-engineering docs into BMAD format
@@ -33,14 +44,14 @@ Use this skill when:
 
 ## What This Skill Does
 
-Reads all 11 reverse-engineering docs and maps their content into 4 BMAD planning artifacts:
+Reads all available reverse-engineering docs (9 core + 2 optional) and maps their content into 4 BMAD planning artifacts:
 
-| BMAD Artifact | Primary Source Docs | Coverage |
-|---|---|---|
-| `prd.md` | functional-specification, business-context, technical-debt-analysis, integration-points | ~90% |
-| `architecture.md` | data-architecture, integration-points, operations-guide, decision-rationale, configuration-reference, observability-requirements | ~85% |
-| `epics.md` | functional-specification (FRs grouped by domain), business-context (personas), technical-debt-analysis (migration matrix) | ~75% |
-| `ux-design-specification.md` | visual-design-system, business-context (personas), functional-specification (user stories) | ~65% |
+| BMAD Artifact | Primary Source Docs | Coverage (11 docs) | Coverage (9 docs) | Fallback Sources for Optional Docs |
+|---|---|---|---|---|
+| `prd.md` | functional-specification, business-context **[OPTIONAL]**, technical-debt-analysis, integration-points | ~90% | ~80% | business-context fallback: functional-specification (Executive Summary, User Stories, Success Criteria) + visual-design-system (persona UX context) |
+| `architecture.md` | data-architecture, integration-points, operations-guide, decision-rationale **[OPTIONAL]**, configuration-reference, observability-requirements | ~85% | ~75% | decision-rationale fallback: configuration-reference (tech stack, framework choices) + data-architecture (schema design decisions) + integration-points (integration choice rationale) |
+| `epics.md` | functional-specification (FRs grouped by domain), business-context **[OPTIONAL]** (personas), technical-debt-analysis (migration matrix) | ~75% | ~70% | business-context fallback: functional-specification (User Personas, Product Positioning) |
+| `ux-design-specification.md` | visual-design-system, business-context **[OPTIONAL]** (personas), functional-specification (user stories) | ~65% | ~55% | business-context fallback: functional-specification (User Personas) + visual-design-system (user flows, accessibility) |
 
 ---
 
@@ -51,7 +62,7 @@ Reads all 11 reverse-engineering docs and maps their content into 4 BMAD plannin
 **Time:** ~10 minutes
 **User input:** None
 
-- Maps all 11 docs to BMAD artifacts automatically
+- Maps all available docs (9-11) to BMAD artifacts automatically
 - For questions the docs can't answer, infers from available context
 - Treats `[INFERRED]` items as accepted
 - Resolves `[NEEDS USER INPUT]` items with best-effort inference
@@ -80,7 +91,7 @@ Reads all 11 reverse-engineering docs and maps their content into 4 BMAD plannin
 **Time:** ~25-30 minutes
 **User input:** Full conversation
 
-- Pre-loads all 11 docs as context (you don't start from zero)
+- Pre-loads all available docs (9-11) as context (you don't start from zero)
 - Walks through each BMAD artifact section by section
 - Shows draft content for each section, asks for approval/changes
 - Most thorough, but slowest
@@ -97,13 +108,20 @@ Reads all 11 reverse-engineering docs and maps their content into 4 BMAD plannin
 ```
 Source → BMAD PRD Section
 ─────────────────────────────────────────────────────────────────
-business-context.md
+business-context.md [OPTIONAL]
   ├── Product Vision           → ## Product Vision
   ├── Target Users & Personas  → ## Target Users
   ├── Business Goals           → ## Success Criteria / ## KPIs
   ├── Competitive Landscape    → ## Market Context
   ├── Stakeholder Map          → ## Stakeholders
   └── Business Constraints     → ## Constraints & Assumptions
+  │
+  └── [FALLBACK if missing - ~70% coverage for above sections]:
+        functional-specification.md (Executive Summary → Product Vision,
+          User Stories + User Personas → Target Users,
+          Success Criteria → Success Criteria / KPIs,
+          Product Positioning → Market Context)
+        visual-design-system.md (persona UX context → Target Users supplement)
 
 functional-specification.md
   ├── Functional Requirements  → ## FR1: Title, ## FR2: Title, ...
@@ -149,11 +167,16 @@ operations-guide.md
   ├── Scalability Strategy     → ## Scalability & Performance
   └── Monitoring               → ## Observability Architecture
 
-decision-rationale.md
+decision-rationale.md [OPTIONAL]
   ├── Technology Selection     → ## Technology Stack
   ├── ADRs                     → ## ADR-001: Title, ## ADR-002: Title, ...
   ├── Design Principles        → ## Design Principles
   └── Trade-offs               → ## Trade-offs & Constraints
+  │
+  └── [FALLBACK if missing - ~60% coverage for above sections]:
+        configuration-reference.md (tech stack, framework choices → Technology Stack)
+        data-architecture.md (schema design decisions → ADRs supplement)
+        integration-points.md (integration choice rationale → ADRs supplement)
 
 configuration-reference.md
   ├── Environment Variables    → ## Configuration Architecture
@@ -175,9 +198,13 @@ functional-specification.md
   ├── User Stories per FR      → ### Story N.M: Title
   └── Acceptance Criteria      → Acceptance Criteria per story
 
-business-context.md
+business-context.md [OPTIONAL]
   ├── Personas                 → "As a [persona]..." in user stories
   └── Business Goals           → Epic priority ordering
+  │
+  └── [FALLBACK if missing]:
+        functional-specification.md (User Personas → persona names,
+          Product Positioning → priority ordering context)
 
 technical-debt-analysis.md
   ├── Migration Priority Matrix → ## Epic: Technical Debt Resolution
@@ -207,9 +234,13 @@ visual-design-system.md
   ├── Accessibility Standards  → ## Accessibility Requirements
   └── User Flows               → ## User Flows
 
-business-context.md
+business-context.md [OPTIONAL]
   ├── Personas                 → ## User Personas (with journey maps)
   └── Business Constraints     → ## Design Constraints
+  │
+  └── [FALLBACK if missing]:
+        functional-specification.md (User Personas → persona definitions)
+        visual-design-system.md (User Flows, Accessibility → journey context)
 
 functional-specification.md
   ├── User Stories             → ## Key User Journeys
@@ -225,35 +256,94 @@ functional-specification.md
 ```bash
 # Check that Gear 2 is complete
 DOCS_DIR="docs/reverse-engineering"
-REQUIRED_DOCS=("functional-specification.md" "integration-points.md" "configuration-reference.md" "data-architecture.md" "operations-guide.md" "technical-debt-analysis.md" "observability-requirements.md" "visual-design-system.md" "test-documentation.md" "business-context.md" "decision-rationale.md")
 
-MISSING=0
-for doc in "${REQUIRED_DOCS[@]}"; do
+# 9 core docs (always produced by reverse-engineer v1.x+)
+CORE_DOCS=("functional-specification.md" "integration-points.md" "configuration-reference.md" "data-architecture.md" "operations-guide.md" "technical-debt-analysis.md" "observability-requirements.md" "visual-design-system.md" "test-documentation.md")
+
+# 2 optional docs (produced by reverse-engineer v2.0+)
+OPTIONAL_DOCS=("business-context.md" "decision-rationale.md")
+
+CORE_MISSING=0
+OPTIONAL_MISSING=0
+OPTIONAL_MISSING_LIST=()
+
+for doc in "${CORE_DOCS[@]}"; do
   if [ ! -f "$DOCS_DIR/$doc" ]; then
-    echo "MISSING: $doc"
-    MISSING=$((MISSING + 1))
+    echo "MISSING (core): $doc"
+    CORE_MISSING=$((CORE_MISSING + 1))
   fi
 done
 
-if [ $MISSING -gt 0 ]; then
-  echo "ERROR: $MISSING docs missing. Run Gear 2 first: /stackshift.reverse-engineer"
+for doc in "${OPTIONAL_DOCS[@]}"; do
+  if [ ! -f "$DOCS_DIR/$doc" ]; then
+    echo "MISSING (optional): $doc"
+    OPTIONAL_MISSING=$((OPTIONAL_MISSING + 1))
+    OPTIONAL_MISSING_LIST+=("$doc")
+  fi
+done
+
+if [ $CORE_MISSING -gt 0 ]; then
+  echo "ERROR: $CORE_MISSING core docs missing. Run Gear 2 first: /stackshift.reverse-engineer"
   exit 1
 fi
 
-echo "All 11 reverse-engineering docs found. Ready to synthesize."
+TOTAL_FOUND=$((9 + 2 - OPTIONAL_MISSING))
+
+if [ $OPTIONAL_MISSING -gt 0 ]; then
+  echo "WARNING: $TOTAL_FOUND/11 docs found. Missing optional: ${OPTIONAL_MISSING_LIST[*]}"
+  echo "Proceeding in 9-doc mode (~85% average coverage). Missing content will be inferred from related docs."
+else
+  echo "All 11 reverse-engineering docs found. Ready to synthesize at full coverage."
+fi
 ```
 
-**If docs are missing:** Guide user to run `/stackshift.reverse-engineer` first.
-**If only 9 docs exist (legacy):** business-context.md and decision-rationale.md may be missing from older runs. Generate them first using the reverse-engineer skill, or proceed with reduced coverage (warn user).
+**If core docs are missing:** Error. Guide user to run `/stackshift.reverse-engineer` first.
+**If all 11 exist:** Proceed at full coverage.
+**If only 9 core exist:** Warn about reduced coverage (~85% average), then proceed to Step 0.5 to infer missing content.
+
+### Step 0.5: Infer Missing Documents
+
+**Only runs if optional docs are missing.** Extracts equivalent content from related core docs.
+
+#### If `business-context.md` is missing:
+
+Extract business context from:
+- **`functional-specification.md`**: Executive Summary (product vision), User Stories (persona behavior), Success Criteria (business goals), User Personas (target users), Product Positioning (market context)
+- **`visual-design-system.md`**: Persona UX context (user flows, accessibility standards imply target audience)
+
+Map inferred content to the sections that would have come from business-context.md:
+- Product Vision → from Executive Summary / Product Positioning
+- Target Users & Personas → from User Personas + visual-design-system user flows
+- Business Goals → from Success Criteria
+- Competitive Landscape → `[INFERRED FROM: functional-specification.md - limited data, review recommended]`
+- Stakeholder Map → `[INFERRED FROM: functional-specification.md - limited data, review recommended]`
+- Business Constraints → from NFRs (performance, security, compliance constraints)
+
+**Note:** Coverage for sections sourced from business-context.md drops to ~70% (vs ~90% with the full doc). Persona depth and competitive landscape are most affected.
+
+#### If `decision-rationale.md` is missing:
+
+Extract technology decisions from:
+- **`configuration-reference.md`**: Tech stack identification (languages, frameworks, versions from environment variables and config), framework choices (build tools, deployment targets)
+- **`data-architecture.md`**: Schema design decisions (why certain data models, relationships, indexing strategies)
+- **`integration-points.md`**: Integration choice rationale (why specific external services, API patterns, auth providers)
+
+Map inferred content to the sections that would have come from decision-rationale.md:
+- Technology Stack → from configuration-reference.md environment/config analysis
+- ADRs → synthesized from observable choices across all three docs, marked `[INFERRED FROM: configuration-reference.md, data-architecture.md, integration-points.md]`
+- Design Principles → `[INFERRED FROM: codebase patterns - review recommended]`
+- Trade-offs → inferred from technical-debt-analysis.md (debt items imply past trade-offs)
+
+**Note:** Coverage for sections sourced from decision-rationale.md drops to ~60% (vs ~85% with the full doc). ADR rationale and design principles are most affected since "why" decisions were made is harder to infer than "what" decisions were made.
 
 ### Step 1: Load All Reverse-Engineering Docs
 
-Read all 11 docs from `docs/reverse-engineering/` into memory. Parse each for structured content:
+Read all available docs (9-11) from `docs/reverse-engineering/` into memory. If Step 0.5 inferred content for missing optional docs, include that inferred content alongside the core docs. Parse each for structured content:
 - Extract all FRs, NFRs, user stories, personas
 - Extract all data models, API contracts, integration points
-- Extract all ADRs, technology selections, design principles
-- Extract all business context, goals, constraints
-- Note all `[INFERRED]` and `[NEEDS USER INPUT]` markers
+- Extract all ADRs, technology selections, design principles (from docs or inferred in Step 0.5)
+- Extract all business context, goals, constraints (from docs or inferred in Step 0.5)
+- Note all `[INFERRED]`, `[INFERRED FROM: source-doc]`, and `[NEEDS USER INPUT]` markers
 
 ### Step 2: Choose Mode
 
@@ -298,7 +388,7 @@ C) Interactive - Section-by-section review (~25-30 min)
 
 #### Interactive Mode
 
-1. **Create context brief**: One-page summary of all 11 docs for quick reference.
+1. **Create context brief**: One-page summary of all available docs (9-11) for quick reference, noting any inferred content from Step 0.5.
 2. **Walk through prd.md** section by section:
    - Show draft for each section
    - Ask: "Approve as-is, or modify?"
@@ -336,6 +426,8 @@ project_name: "<from state file>"
 date: "<current date>"
 synthesize_mode: "yolo"  # or guided, interactive
 coverage_score: 92  # percentage of sections filled from docs
+source_doc_count: 9  # or 11 - how many reverse-engineering docs were available
+inferred_sections: []  # list of sections that used fallback sources, e.g. ["Product Vision", "ADRs"]
 ---
 ```
 
@@ -381,15 +473,19 @@ workflowType: prd
 project_name: "..."
 date: "..."
 synthesize_mode: "guided"
+source_doc_count: 9  # or 11
+inferred_sections: ["Product Vision", "Target Users", "Market Context"]  # empty if 11 docs
 ---
 
 # [Product Name] - Product Requirements Document
 
 ## Product Vision
 [From business-context.md Product Vision]
+[Or INFERRED FROM: functional-specification.md Executive Summary + Product Positioning]
 
 ## Target Users
 [From business-context.md Personas + functional-spec User Personas]
+[Or INFERRED FROM: functional-specification.md User Personas + visual-design-system.md user flows]
 
 ### Persona 1: [Name]
 - **Role:** ...
@@ -435,6 +531,8 @@ synthesize_mode: "guided"
 ---
 stepsCompleted: [1, 2, 3]
 workflowType: architecture
+source_doc_count: 9  # or 11
+inferred_sections: ["Technology Stack", "ADRs", "Design Principles"]  # empty if 11 docs
 ---
 
 # [Product Name] - Technical Architecture
@@ -444,6 +542,7 @@ workflowType: architecture
 
 ## Technology Stack
 [From decision-rationale.md Technology Selection]
+[Or INFERRED FROM: configuration-reference.md tech stack and framework choices]
 
 ## Domain Model
 [From data-architecture.md Domain Model / Bounded Contexts]
@@ -465,6 +564,7 @@ workflowType: architecture
 
 ## ADR-001: [Decision Title]
 **Context:** [From decision-rationale.md]
+[Or INFERRED FROM: configuration-reference.md, data-architecture.md, integration-points.md]
 **Decision:** ...
 **Rationale:** ...
 
@@ -534,9 +634,11 @@ After BMAD Synthesize:
 
 ## Technical Notes
 
-- Read all 11 docs using the Read tool (parallel reads recommended)
+- Read all available docs (9-11) using the Read tool (parallel reads recommended)
+- If only 9 docs present, run Step 0.5 inference before proceeding to artifact generation
 - For Mermaid diagrams in architecture.md, generate from integration-points.md data flow descriptions
 - Epic grouping uses domain clustering: analyze FR titles and descriptions for common themes
-- User story format: "As a [persona from business-context], I want [FR description], so that [business goal]"
+- User story format: "As a [persona from business-context or functional-specification], I want [FR description], so that [business goal]"
 - Priority inheritance: Stories inherit priority from their source FR
-- ADR numbering: Sequential from decision-rationale.md, preserving original order
+- ADR numbering: Sequential from decision-rationale.md (or inferred from config/data/integration docs), preserving original order
+- All inferred content must be tagged with `[INFERRED FROM: source-doc]` so users can verify accuracy

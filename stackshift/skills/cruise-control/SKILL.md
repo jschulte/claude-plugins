@@ -97,7 +97,15 @@ At the start, you'll be asked:
 
 Then cruise control takes over!
 
-**Note**: For BMAD Method, questions 3-6 are skipped. For BMAD Auto-Pilot, questions 3-4 are skipped. For Architecture Only, questions 3-5 are skipped.
+7. **Portable Extraction Mode:** (Portable Extraction only)
+   ```
+   How should portable specs be generated?
+   A) YOLO - Fully automatic, no questions (~10 min)
+   B) Guided - Auto-fill + targeted questions (~15-20 min)
+   ```
+   Note: Interactive mode is not available in cruise control (requires manual interaction).
+
+**Note**: For BMAD Method, questions 3-6 are skipped. For BMAD Auto-Pilot, questions 3-4 are skipped. For Architecture Only, questions 3-5 are skipped. For Portable Extraction, questions 3-6 are skipped.
 
 ---
 
@@ -225,6 +233,31 @@ Then cruise control takes over!
 #### Gears 3-5: Replaced by Architecture Generator
 - Runs `/stackshift.architect` with user constraints from Gear 1
 - Generates architecture.md with Mermaid diagrams, ADRs, infrastructure
+- **StackShift completes!** 🏁
+
+---
+
+### Portable Extraction Path
+
+#### Gear 1: Analyze (Auto)
+- Detects tech stack
+- Assesses completeness
+- Sets route and framework (`portable-extract`)
+- Saves state with `auto_mode: true`
+- **Auto-shifts to Gear 2** ✅
+
+#### Gear 2: Reverse Engineer (Auto)
+- Launches `stackshift:code-analyzer` agent
+- Extracts all 11 documentation files
+- Generates all docs in `docs/reverse-engineering/`
+- **Auto-shifts to Portable Extraction** ✅
+
+#### Gears 3-5: Replaced by Portable Extraction
+- Runs `/stackshift.portable-extract` in selected mode (YOLO or Guided)
+- Abstracts personas to [User], [Admin], [System]
+- Filters non-portable stories (tech debt, CI/CD, platform-specific)
+- Extracts business rules, data contracts, edge cases
+- Generates epics.md and component-spec.md in `_portable-extract/`
 - **StackShift completes!** 🏁
 
 ---
@@ -440,6 +473,18 @@ After cruise control completes:
 - ✅ `docs/reverse-engineering/` with all 11 files generated
 - ✅ `architecture.md` with Mermaid diagrams, ADRs, infrastructure recommendations
 - ✅ Cost estimation and migration path included
+
+### Portable Extraction Path
+
+After cruise control completes:
+
+- ✅ Gears 1, 2 complete + Portable Extraction complete
+- ✅ `.stackshift-state.json` shows framework: "portable-extract"
+- ✅ `docs/reverse-engineering/` with all 11 files generated
+- ✅ `_portable-extract/epics.md` with abstract personas and domain-grouped epics
+- ✅ `_portable-extract/component-spec.md` with business rules, data contracts, edge cases
+- ✅ Portability report with extraction summary and score
+- ✅ Ready to copy to any target project
 
 ---
 
