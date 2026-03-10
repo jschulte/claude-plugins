@@ -1,16 +1,16 @@
 # Generate Portable Epics
 
-Detailed instructions for generating BMAD-format epics with abstract personas, exclusion filtering, and cross-references to component-spec.md.
-
----
-
-## Overview
-
 Transform source functional requirements into portable, domain-grouped epics that:
 - Use abstract personas ([User], [Admin], [System]) instead of source-specific roles
 - Exclude non-portable stories (tech debt, CI/CD, test infra, platform-specific)
 - Abstract integration stories (specific services -> generic providers)
 - Cross-reference business rules in component-spec.md by ID
+
+---
+
+## Reduced Coverage
+
+When `business-context.md` is unavailable (legacy 9-doc case), default all epic priorities to P1. Skip business goal references in epic descriptions. Add a note in each epic: `[REDUCED COVERAGE - business goals unavailable, priorities defaulted to P1]`.
 
 ---
 
@@ -308,9 +308,39 @@ Exclusion Summary:
   Portability score:          92%
 ```
 
-The portability score is calculated as:
+The portability score measures the percentage of included stories that required no abstraction:
 ```
 score = (included_as_is / (included_as_is + abstracted)) * 100
 ```
 
-Stories that required abstraction lower the score slightly because they may need manual review in the target context.
+This score reflects how much of the portable output can be used as-is versus requiring manual review. Stories that needed abstraction (vendor-specific references replaced with generic providers) may need additional review in the target context. Excluded stories are not counted -- they are fully removed, not portable.
+
+---
+
+## Mode-Specific Behavior
+
+### YOLO Mode
+
+- Apply the exclusion filter automatically without presenting results.
+- Group stories into domain-based epics using the grouping rules without confirmation.
+- When a story could belong to multiple domains, assign it to the domain it primarily serves. Mark with `[AUTO-RESOLVED]`.
+- When epic balance check finds an epic with fewer than 2 stories, merge it into the most related epic automatically.
+- Run all quality checks and auto-fix any issues found (abstract remaining tech names, fix persona references).
+
+### Guided Mode
+
+- Apply the exclusion filter automatically, then present the summary for confirmation:
+  - "Excluded N stories. Abstracted M integration stories. Review the exclusion list?"
+- Present the domain grouping for validation:
+  - "FRs group into N domains: [list]. Does this grouping make sense, or should any stories move?"
+- Auto-resolve cross-cutting stories but flag them:
+  - "Story X was placed in [Domain A] but also relates to [Domain B]. Correct?"
+- Limit questions to 2-4 items on grouping.
+
+### Interactive Mode
+
+- Present the exclusion filter results story-by-story for approval.
+- Walk through domain grouping interactively, asking the user to assign ambiguous stories.
+- Present each epic's story list for review before finalizing.
+- Show the full cross-reference mapping for verification.
+- Present the quality check results and ask before auto-fixing any issues.

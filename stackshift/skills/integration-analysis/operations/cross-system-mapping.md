@@ -1,4 +1,4 @@
-# Cross-System Mapping — Phase 3 Operation
+# Cross-System Mapping -- Phase 3 Operation
 
 **Purpose:** Analyze integration surfaces between all profiled systems.
 **Called from:** SKILL.md Phase 3
@@ -6,16 +6,28 @@
 
 ---
 
+## ToC
+
+1. [Capability Mapping](#step-1-capability-mapping)
+2. [Integration Contract Documentation](#step-2-integration-contract-documentation)
+3. [Shared Data Model Analysis](#step-3-shared-data-model-analysis)
+4. [End-to-End Flow Tracing](#step-4-end-to-end-flow-tracing)
+5. [Dependency Matrix Generation](#step-5-dependency-matrix-generation)
+6. [Duplication Detection](#step-6-duplication-detection)
+7. [Quality Checklist](#quality-checklist)
+
+---
+
 ## Overview
 
-This is the core analytical phase. With all system profiles in hand, we now look across systems to find:
-- **Shared capabilities** — the same business function served by multiple systems
-- **Integration contracts** — the API surfaces where systems connect
-- **Shared data** — entities that appear in multiple systems (with conflicts)
-- **End-to-end flows** — user journeys that cross system boundaries
-- **Dependencies** — who depends on whom, and how deeply
+This is the core analytical phase. With all system profiles in hand, look across systems to find:
+- **Shared capabilities** -- the same business function served by multiple systems
+- **Integration contracts** -- the API surfaces where systems connect
+- **Shared data** -- entities that appear in multiple systems (with conflicts)
+- **End-to-end flows** -- user journeys that cross system boundaries
+- **Dependencies** -- who depends on whom, and how deeply
 
-This phase should run in the **main context** (not delegated to subagents) because it requires synthesizing information from all profiles simultaneously.
+**IMPORTANT:** Run this phase in the main context. Do not delegate to subagents -- this phase requires synthesizing information from all profiles simultaneously, which subagents cannot access.
 
 ---
 
@@ -50,17 +62,17 @@ This phase should run in the **main context** (not delegated to subagents) becau
 
 ## By Business Domain
 
-### Domain: Tenant Configuration
-| Capability | Config Svc | User Svc | Web App | API GW | Notes |
-|------------|-----------|----------|---------|--------|-------|
-| Tenant metadata storage | Primary | Duplicates | Consumer | Consumer | CONFLICT: Both Config Svc and User Svc store tenant metadata |
-| Config hierarchy resolution | Primary | - | Consumer | - | Config Svc is sole owner |
+### Domain: Dealer Configuration
+| Capability | DVS | ADD | CMS | WIAPI | Notes |
+|------------|-----|-----|-----|-------|-------|
+| Dealer metadata storage | Primary | Duplicates | Consumer | Consumer | CONFLICT: Both DVS and ADD store dealer metadata |
+| Config hierarchy resolution | Primary | - | Consumer | - | DVS is sole owner |
 | Override management | Primary | - | - | - | |
 | Site-level customization | Primary | - | Consumer | - | |
 
 ### Domain: Content & Layout
-| Capability | Web App | Config Svc | API GW | Notes |
-|------------|---------|-----------|--------|-------|
+| Capability | CMS Web | DVS | WIAPI | Notes |
+|------------|---------|-----|-------|-------|
 | Page layout resolution | Primary | Secondary (provides config) | - | |
 | Widget rendering | Primary | - | Secondary (provides data) | |
 | Template selection | Primary | Secondary (provides variation) | - | |
@@ -76,20 +88,20 @@ Generate a capability-centric Mermaid diagram:
 ```markdown
 ```mermaid
 graph TB
-    subgraph "Tenant Configuration"
-        TC[Tenant Config] --> CS[Config Svc]
-        TC --> US[User Svc]
-        TC -.-> WA[Web App]
+    subgraph "Dealer Configuration"
+        DC[Dealer Config] --> DVS
+        DC --> ADD
+        DC -.-> CMS[CMS Web]
     end
     subgraph "Content & Layout"
-        CL[Page Layout] --> WA
-        CL -.-> CS
-        WR[Widget Rendering] --> WA
-        WR -.-> AG[API Gateway]
+        CL[Page Layout] --> CMS
+        CL -.-> DVS
+        WR[Widget Rendering] --> CMS
+        WR -.-> WIAPI
     end
     subgraph "Inventory"
-        INV[Inventory Data] --> IS[Inventory Svc]
-        INV -.-> AG
+        INV[Inventory Data] --> WI[Web Inventory]
+        INV -.-> WIAPI
     end
 ```
 ```
@@ -156,14 +168,14 @@ Generate a summary matrix showing all integrations:
 ```markdown
 ### Integration Matrix
 
-|  | Config Svc | User Svc | Web App | API GW | i18n Svc | Inventory Svc |
-|--|-----------|----------|---------|--------|----------|---------------|
-| **Config Svc** | - | REST→ | REST← | - | - | - |
-| **User Svc** | REST← | - | REST← | REST← | - | - |
-| **Web App** | REST→ | REST→ | - | REST→ | REST→ | - |
-| **API GW** | - | REST→ | REST← | - | - | REST→ |
-| **i18n Svc** | - | - | REST← | - | - | - |
-| **Inventory Svc** | - | - | - | REST← | - | - |
+|  | DVS | ADD | CMS Web | WIAPI | Label Svc | Web Inv |
+|--|-----|-----|---------|-------|-----------|---------|
+| **DVS** | - | REST→ | REST← | - | - | - |
+| **ADD** | REST← | - | REST← | REST← | - | - |
+| **CMS Web** | REST→ | REST→ | - | REST→ | REST→ | - |
+| **WIAPI** | - | REST→ | REST← | - | - | REST→ |
+| **Label Svc** | - | - | REST← | - | - | - |
+| **Web Inv** | - | - | - | REST← | - | - |
 
 → = row system calls column system
 ← = column system calls row system
@@ -186,34 +198,34 @@ Generate a summary matrix showing all integrations:
 For each entity that appears in 2+ systems:
 
 ```markdown
-## Shared Entity: Tenant
+## Shared Entity: Dealer
 
 ### Representations
 | System | Type Name | Key Fields | Source |
 |--------|-----------|------------|--------|
-| Config Service | TenantConfig | tenantId, name, brand, group, hierarchy | Primary (config) |
-| User Service | TenantRecord | id, tenantName, brandCode, groupId | Primary (metadata) |
-| Web App | TenantContext | tenantId, name, brand | Consumer (merged) |
+| DVS | DealerConfig | dealerId, name, oem, group, hierarchy | Primary (config) |
+| ADD | DealerRecord | id, dealerName, oemCode, groupId | Primary (metadata) |
+| CMS Web | DealerContext | dealerId, name, oem | Consumer (merged) |
 
 ### Field Mapping
-| Concept | Config Svc Field | User Svc Field | Web App Field | Conflict? |
-|---------|-----------------|----------------|---------------|-----------|
-| Tenant ID | tenantId (string) | id (number) | tenantId (string) | YES: number vs string |
-| Name | name | tenantName | name | No (same concept, different field name) |
-| Brand | brand (string) | brandCode (enum) | brand (string) | YES: free text vs enum |
+| Concept | DVS Field | ADD Field | CMS Field | Conflict? |
+|---------|-----------|-----------|-----------|-----------|
+| Dealer ID | dealerId (string) | id (number) | dealerId (string) | YES: number vs string |
+| Name | name | dealerName | name | No (same concept, different field name) |
+| OEM | oem (string) | oemCode (enum) | oem (string) | YES: free text vs enum |
 
 ### Source of Truth
 | Field | Authoritative System | Reason |
 |-------|---------------------|--------|
-| Tenant ID | User Service | User Service is the system of record for tenant identity |
-| Config overrides | Config Service | Config Service owns the config hierarchy |
-| Tenant name | User Service | User Service is the master data source |
+| Dealer ID | ADD | ADD is the system of record for dealer identity |
+| Config overrides | DVS | DVS owns the config hierarchy |
+| Dealer name | ADD | ADD is the master data source |
 
 ### Conflicts Requiring Resolution
 | Conflict | Severity | Resolution Strategy |
 |----------|----------|-------------------|
-| tenantId: string vs number | BLOCKING | Standardize on string in new platform |
-| brand: free text vs enum | DEGRADING | Use enum as canonical, map free text |
+| dealerId: string vs number | BLOCKING | Standardize on string in new platform |
+| oem: free text vs enum | DEGRADING | Use enum as canonical, map free text |
 ```
 
 ### Data Flow Diagram
@@ -226,22 +238,22 @@ For key user journeys, trace data across systems:
 ```mermaid
 sequenceDiagram
     participant Browser
-    participant WA as Web App
-    participant CS as Config Service
-    participant US as User Service
-    participant AG as API Gateway
-    participant LS as i18n Service
+    participant CMS as CMS Web
+    participant DVS
+    participant ADD
+    participant WIAPI
+    participant LS as Label Services
 
-    Browser->>WA: GET /tenant-page
-    WA->>CS: GET /config/{siteId}
-    CS-->>WA: SiteConfig (pages, widgets, theme)
-    WA->>US: GET /tenant/{tenantId}
-    US-->>WA: TenantRecord (name, address, hours)
-    WA->>LS: GET /labels/{locale}
-    LS-->>WA: Labels (UI strings)
-    WA->>AG: GET /inventory/{tenantId}
-    AG-->>WA: InventorySummary
-    WA-->>Browser: Rendered HTML
+    Browser->>CMS: GET /dealer-page
+    CMS->>DVS: GET /config/{siteId}
+    DVS-->>CMS: SiteConfig (pages, widgets, theme)
+    CMS->>ADD: GET /dealer/{dealerId}
+    ADD-->>CMS: DealerRecord (name, address, hours)
+    CMS->>LS: GET /labels/{locale}
+    LS-->>CMS: Labels (UI strings)
+    CMS->>WIAPI: GET /inventory/{dealerId}
+    WIAPI-->>CMS: InventorySummary
+    CMS-->>Browser: Rendered HTML
 ```
 ```
 
@@ -298,18 +310,18 @@ sequenceDiagram
 
 | System | Fan-In | Fan-Out | Depth | Role |
 |--------|--------|---------|-------|------|
-| Config Service | 3 | 0 | 0 | Pure provider (critical infrastructure) |
-| User Service | 3 | 1 | 1 | Provider with one dependency |
-| Web App | 0 | 4 | 2 | Pure consumer (orchestrator) |
-| API Gateway | 1 | 2 | 2 | Middleman |
+| DVS | 3 | 0 | 0 | Pure provider (critical infrastructure) |
+| ADD | 3 | 1 | 1 | Provider with one dependency |
+| CMS Web | 0 | 4 | 2 | Pure consumer (orchestrator) |
+| WIAPI | 1 | 2 | 2 | Middleman |
 
 **Fan-in** = number of systems that depend on this system
 **Fan-out** = number of systems this system depends on
 **Depth** = longest dependency chain from this system
 
-**Critical infrastructure** (high fan-in): Config Service, User Service, i18n Service
-**Orchestrators** (high fan-out): Web App
-**Middlemen** (both): API Gateway
+**Critical infrastructure** (high fan-in): DVS, ADD, Label Services
+**Orchestrators** (high fan-out): CMS Web
+**Middlemen** (both): WIAPI
 ```
 
 ---
@@ -326,8 +338,8 @@ sequenceDiagram
 | Type | Description | Example |
 |------|-------------|---------|
 | **Functional duplication** | Same business logic in multiple systems | Email sending in 3 services |
-| **Data duplication** | Same data stored in multiple systems | Tenant name in Config Service and User Service |
-| **API duplication** | Same data available via multiple APIs | Tenant info from Config Service API and User Service API |
+| **Data duplication** | Same data stored in multiple systems | Dealer name in DVS and ADD |
+| **API duplication** | Same data available via multiple APIs | Dealer info from DVS API and ADD API |
 | **Logic divergence** | Same concept, different rules | Price calculation differs between systems |
 
 ### Output
@@ -337,8 +349,8 @@ sequenceDiagram
 
 | What's Duplicated | Systems | Type | Risk | Recommendation |
 |-------------------|---------|------|------|----------------|
-| Tenant metadata | Config Service, User Service | Data duplication | HIGH — data divergence | Designate single source of truth |
-| Label resolution | Web App, API Gateway | Functional duplication | MEDIUM — inconsistent labels | Centralize in i18n Service |
+| Dealer metadata | DVS, ADD | Data duplication | HIGH — data divergence | Designate single source of truth |
+| Label resolution | CMS Web, WIAPI | Functional duplication | MEDIUM — inconsistent labels | Centralize in Label Services |
 ```
 
 ---

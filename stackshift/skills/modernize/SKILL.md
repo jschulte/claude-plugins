@@ -1,419 +1,337 @@
 ---
 name: modernize
-description: Brownfield Upgrade - Upgrade all dependencies and modernize the application while maintaining spec-driven control. Runs after Gear 6 for brownfield projects with modernize flag enabled. Updates deps, fixes breaking changes, improves test coverage, updates specs to match changes.
+description: Activated when a brownfield project completes Gear 6 with modernize flag enabled. Upgrades all dependencies to latest stable versions, fixes breaking changes with spec guidance, synchronizes specifications, and validates coverage. Scoped to Node.js/TypeScript projects only.
+allowed-tools:
+  - Bash
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
 ---
 
-# Modernize (Brownfield Upgrade)
+# Modernize (Brownfield Dependency Upgrade)
 
-**Optional Step** after Gear 6 for Brownfield projects with `modernize: true` flag.
+Runs after Gear 6 for brownfield projects with `modernize: true` in `.stackshift-state.json`.
 
-**Estimated Time:** 2-6 hours (depends on dependency age and breaking changes)
-**Prerequisites:** Gears 1-6 completed, 100% spec coverage established
-**Output:** Modern dependency versions, updated tests, synchronized specs
-
----
-
-## When to Use This Skill
-
-Use this skill when:
-- Brownfield path with `modernize: true` flag set
-- Gears 1-6 are complete (specs established, gaps implemented)
-- Ready to upgrade all dependencies to latest versions
-- Want to modernize while maintaining spec-driven control
-
-**Trigger Conditions:**
-- State file has `path: "brownfield"` AND `modernize: true`
-- Gear 6 (implement) is complete
-- User requested "Brownfield Upgrade" during Gear 1
+**Prerequisites:** Gears 1-6 complete, 100% spec coverage established
+**Output:** Modern dependency versions, updated tests, synchronized specs, upgrade report
+**Scope:** Node.js/TypeScript projects only
 
 ---
 
-## What This Skill Does
+## Constraints
 
-Systematically upgrades the entire application to modern dependency versions:
-
-1. **Detect Package Manager** - npm, yarn, pnpm, pip, go mod, cargo, etc.
-2. **Audit Current Versions** - Document what's installed before upgrade
-3. **Upgrade Dependencies** - Use appropriate upgrade command for tech stack
-4. **Run Tests** - Identify breaking changes
-5. **Fix Breaking Changes** - Iteratively fix with spec guidance
-6. **Update Specs** - Synchronize specs with API/behavior changes
-7. **Validate Coverage** - Ensure tests meet 85%+ threshold
-8. **Verify Specs Match** - Run /speckit.analyze to confirm alignment
+- Do NOT upgrade to pre-release, beta, or canary versions. Use only stable releases.
+- Do NOT delete lockfiles (package-lock.json, yarn.lock, pnpm-lock.yaml).
+- Do NOT run `npm audit fix --force`. Use `npm audit fix` only.
+- Do NOT proceed to the next phase until the current phase passes its gate check.
+- Execute phases sequentially. No phases run in parallel.
+- If `/speckit.analyze` is unavailable, manually compare spec acceptance criteria against test results as a fallback.
 
 ---
 
-## Process Overview
+## Trigger Conditions
 
-### Phase 1: Pre-Upgrade Audit
+Read `.stackshift-state.json` in the project root. Verify ALL of:
+1. `path` is `"brownfield"`
+2. `modernize` is `true`
+3. Gear 6 (implement) is complete
 
-**Document current state**:
-```bash
-# Create upgrade baseline
-cat package.json > .modernize/baseline-package.json
+If any condition is false, stop and report which condition failed.
 
-# Run tests to establish baseline
-npm test > .modernize/baseline-test-results.txt
+If `path` is `"greenfield"`, stop. This skill is for brownfield projects only.
 
-# Document current coverage
-npm run test:coverage > .modernize/baseline-coverage.txt
+---
+
+## State Management
+
+**State file:** `.stackshift-state.json` (project root)
+**Working directory:** `.modernize/`
+
+On start, update `.stackshift-state.json`:
+```json
+{ "modernize": true, "modernizeStatus": "in-progress", "modernizeStarted": "<ISO timestamp>" }
 ```
 
-**Analyze upgrade scope**:
-```bash
-# Check for available updates
-npm outdated > .modernize/upgrade-plan.txt
+On success, update:
+```json
+{ "modernizeStatus": "complete", "modernizeCompleted": "<ISO timestamp>" }
+```
 
-# Identify major version bumps (potential breaking changes)
-# Highlight security vulnerabilities
-# Note deprecated packages
+On failure, update:
+```json
+{ "modernizeStatus": "failed", "modernizeError": "<summary of failure>" }
 ```
 
 ---
 
-### Phase 2: Dependency Upgrade
+## Rollback Procedure
 
-**Tech stack detection** (from analysis-report.md):
+If any phase fails and cannot be recovered:
 
-**For Node.js/TypeScript**:
-```bash
-# Update all dependencies
-npm update
-
-# Or for major versions:
-npx npm-check-updates -u
-npm install
-
-# Check for security issues
-npm audit fix
-```
-
-**For Python**:
-```bash
-# Update all dependencies
-pip install --upgrade -r requirements.txt
-pip freeze > requirements.txt
-
-# Or use pip-upgrader
-pip-upgrade requirements.txt
-```
-
-**For Go**:
-```bash
-# Update all dependencies
-go get -u ./...
-go mod tidy
-```
-
-**For Rust**:
-```bash
-# Update dependencies
-cargo update
-
-# Check for outdated packages
-cargo outdated
-```
+1. Copy `.modernize/baseline-package.json` back to `package.json`.
+2. Copy `.modernize/baseline-lockfile` back to the original lockfile location (if saved).
+3. Run `npm install`.
+4. Run `npm test` to verify baseline is restored.
+5. If baseline tests pass, log "Rolled back to baseline successfully."
+6. If baseline tests fail, stop and ask the user for guidance.
+7. Update `.stackshift-state.json` with `modernizeStatus: "failed"`.
 
 ---
 
-### Phase 3: Breaking Change Detection
+## Phase 1: Pre-Upgrade Baseline
 
-**Run tests after upgrade**:
+Create the working directory and capture baseline state.
+
 ```bash
-# Run full test suite
-npm test
+mkdir -p .modernize
 
-# Capture failures
+cp package.json .modernize/baseline-package.json
+
+# Save lockfile if present
+if [ -f package-lock.json ]; then cp package-lock.json .modernize/baseline-lockfile; fi
+if [ -f yarn.lock ]; then cp yarn.lock .modernize/baseline-lockfile; fi
+if [ -f pnpm-lock.yaml ]; then cp pnpm-lock.yaml .modernize/baseline-lockfile; fi
+
+npm test 2>&1 | tee .modernize/baseline-test-results.txt
+npm run test:coverage 2>&1 | tee .modernize/baseline-coverage.txt
+npm outdated 2>&1 | tee .modernize/upgrade-plan.txt
+```
+
+**If `npm test` fails at baseline:** Stop. The project has pre-existing test failures. Ask the user whether to proceed or fix tests first.
+
+**Gate check:** `.modernize/baseline-package.json` exists AND `.modernize/baseline-test-results.txt` exists.
+
+Log: "Phase 1 complete -- baseline captured. X packages have available updates."
+
+---
+
+## Phase 2: Dependency Upgrade
+
+Upgrade all dependencies to latest stable versions.
+
+```bash
+npx npm-check-updates -u --target latest --reject '*alpha*,*beta*,*canary*,*rc*'
+npm install 2>&1 | tee .modernize/install-output.txt
+```
+
+**If `npm install` fails after `ncu -u`:**
+1. Read the error output from `.modernize/install-output.txt`.
+2. Identify the failing package(s) from peer dependency or resolution errors.
+3. Revert those specific packages to their previous versions in `package.json` (read versions from `.modernize/baseline-package.json`).
+4. Run `npm install` again.
+5. Document skipped packages in `.modernize/skipped-packages.txt`.
+6. If install still fails after 3 attempts, execute the Rollback Procedure and ask the user.
+
+Run security fixes:
+```bash
+npm audit fix 2>&1 | tee .modernize/audit-fix-output.txt
+```
+
+**Gate check:** `node_modules` directory exists AND `npm install` exited with code 0.
+
+Log: "Phase 2 complete -- dependencies upgraded. X packages updated, Y skipped."
+
+---
+
+## Phase 3: Breaking Change Detection
+
+Run the full test suite against upgraded dependencies.
+
+```bash
 npm test 2>&1 | tee .modernize/post-upgrade-test-results.txt
-
-# Compare to baseline
-diff .modernize/baseline-test-results.txt .modernize/post-upgrade-test-results.txt
 ```
 
-**Identify breaking changes**:
-- TypeScript compilation errors
-- Test failures
-- Runtime errors
-- API signature changes
-- Deprecated method usage
+Compare results to baseline:
+```bash
+diff .modernize/baseline-test-results.txt .modernize/post-upgrade-test-results.txt > .modernize/test-diff.txt 2>&1 || true
+```
+
+Classify failures:
+- **Breaking change failures:** Tests that were passing now fail with different assertion values or changed API signatures. These are expected and get fixed in Phase 4.
+- **Infrastructure failures:** Tests fail with import errors, module-not-found, syntax errors, or timeout errors unrelated to behavior changes. These indicate install problems.
+
+**If more than 50% of tests fail:** Execute the Rollback Procedure. The upgrade scope is too broad. Ask the user whether to attempt incremental upgrades (major versions one at a time).
+
+**If infrastructure failures exist:** Fix import/module resolution issues before proceeding. These are not breaking changes -- they indicate incomplete installation or missing peer dependencies.
+
+**Gate check:** Test results captured AND failure rate is below 50%.
+
+Log: "Phase 3 complete -- X tests passing, Y tests failing (Z breaking changes, W infrastructure issues)."
 
 ---
 
-### Phase 4: Fix Breaking Changes (Spec-Guided)
+## Phase 4: Fix Breaking Changes (Spec-Guided)
 
-**For each breaking change**:
+For each breaking change identified in Phase 3:
 
-1. **Identify affected feature**:
-   - Match failing test to feature spec
-   - Determine which spec the code implements
+1. Match the failing test to its feature spec in `specs/`.
+2. Read the spec's acceptance criteria to understand required behavior.
+3. Update the code to work with the new dependency version while preserving spec compliance.
+4. Update the test if the test itself used deprecated APIs.
+5. Run the specific test to verify the fix.
 
-2. **Review spec requirements**:
-   - What behavior SHOULD exist (from spec)
-   - What changed in the upgrade
-   - How to preserve spec compliance
+After fixing all breaking changes, run the full test suite:
+```bash
+npm test 2>&1 | tee .modernize/post-fix-test-results.txt
+```
 
-3. **Fix with spec guidance**:
-   - Update code to work with new dependency
-   - Ensure behavior still matches spec
-   - Refactor if needed to maintain spec alignment
+**If tests still fail after fixing all identified breaking changes:** Compare against baseline. If failures exist that were not in the baseline, investigate. If after 3 fix iterations tests still fail, ask the user for guidance.
 
-4. **Update tests**:
-   - Fix broken tests
-   - Add tests for new edge cases from upgrade
-   - Maintain 85%+ coverage threshold
+**Gate check:** All tests that passed at baseline now pass. No regressions.
 
-5. **Verify spec alignment**:
-   - Behavior unchanged from user perspective
-   - Implementation may change but spec compliance maintained
+Log: "Phase 4 complete -- X breaking changes fixed. All baseline tests restored."
 
 ---
 
-### Phase 5: Spec Synchronization
+## Phase 5: Spec Synchronization
 
-**Check if upgrades changed behavior**:
+Determine whether dependency upgrades changed observable behavior (not just implementation).
 
-Some dependency upgrades change API behavior:
-- Date formatting libraries (moment → date-fns)
-- Validation libraries (joi → zod)
-- HTTP clients (axios → fetch)
-- ORM updates (Prisma major versions)
+**Detection method:** Compare test output diffs from Phase 3. If tests that were passing now produce different output values (not errors), behavior changed. If tests only failed with import/syntax/API signature errors, only implementation changed.
 
-**If behavior changed**:
-1. Update relevant feature spec to document new behavior
-2. Update acceptance criteria if needed
-3. Update technical requirements with new dependencies
-4. Run /speckit.analyze to validate changes
+**If behavior changed:**
+1. Update the relevant feature spec to document the new behavior.
+2. Update acceptance criteria if outputs or interfaces changed.
+3. Update technical requirements with new dependency versions.
+4. Run `/speckit.analyze` to validate spec-implementation alignment. If `/speckit.analyze` is unavailable, manually verify each spec's acceptance criteria against test results.
 
-**If only implementation changed**:
-- No spec updates needed
-- Just update technical details (versions, file paths)
+**If only implementation changed:**
+- Update version numbers in spec technical details only.
+- No functional spec changes needed.
 
----
+**Gate check:** All specs in `specs/` reflect current dependency versions AND `/speckit.analyze` (or manual check) shows no drift.
 
-### Phase 6: Test Coverage Improvement
-
-**Goal: Achieve 85%+ coverage on all modules**
-
-1. **Run coverage report**:
-   ```bash
-   npm run test:coverage
-   ```
-
-2. **Identify gaps**:
-   - Modules below 85%
-   - Missing edge case tests
-   - Integration test gaps
-
-3. **Add tests with spec guidance**:
-   - Each spec has acceptance criteria
-   - Write tests to cover all criteria
-   - Use spec success criteria as test cases
-
-4. **Validate**:
-   ```bash
-   npm run test:coverage
-   # All modules should be 85%+
-   ```
+Log: "Phase 5 complete -- X specs updated. No spec drift detected."
 
 ---
 
-### Phase 7: Final Validation
+## Phase 6: Test Coverage Improvement
 
-**Run complete validation suite**:
+Run coverage and assess against the 85% threshold.
 
-1. **Build succeeds**:
-   ```bash
-   npm run build
-   # No errors
-   ```
+```bash
+npm run test:coverage 2>&1 | tee .modernize/post-upgrade-coverage.txt
+```
 
-2. **All tests pass**:
-   ```bash
-   npm test
-   # 0 failures
-   ```
+**If all modules are already at 85%+:** Skip to Phase 7. Log: "Phase 6 skipped -- all modules already at 85%+ coverage."
 
-3. **Coverage meets threshold**:
-   ```bash
-   npm run test:coverage
-   # 85%+ on all modules
-   ```
+**If any module is below 85%:**
+1. Identify modules below threshold from coverage output.
+2. For each module, read its spec's acceptance criteria.
+3. Write tests covering each acceptance criterion that lacks a test.
+4. Re-run coverage after adding tests.
 
-4. **Specs validated**:
-   ```bash
-   /speckit.analyze
-   # No drift, all specs match implementation
-   ```
+**Gate check:** `npm run test:coverage` shows all modules at 85%+.
 
-5. **Dependencies secure**:
-   ```bash
-   npm audit
-   # No high/critical vulnerabilities
-   ```
+Log: "Phase 6 complete -- coverage improved from X% to Y%. Z new tests added."
 
 ---
 
-## Output
+## Phase 7: Final Validation
 
-**Upgrade Report** (`.modernize/UPGRADE_REPORT.md`):
+Run the complete validation suite. Every check must pass.
+
+```bash
+npm run build 2>&1 | tee .modernize/build-output.txt
+```
+**If build fails:** Read error output. Fix compilation errors. Re-run build. If build fails after 3 attempts, ask the user.
+
+```bash
+npm test 2>&1 | tee .modernize/final-test-results.txt
+```
+**If any test fails:** This is a regression. Do not proceed. Fix the failing test or execute Rollback Procedure.
+
+```bash
+npm run test:coverage 2>&1 | tee .modernize/final-coverage.txt
+```
+**If any module is below 85%:** Return to Phase 6.
+
+Run `/speckit.analyze` (or manual spec check).
+**If spec drift detected:** Return to Phase 5.
+
+```bash
+npm audit 2>&1 | tee .modernize/final-audit.txt
+```
+**If high or critical vulnerabilities remain:** Run `npm audit fix` (not `--force`). If vulnerabilities persist, document them in the upgrade report and inform the user.
+
+**Gate check:** Build passes AND all tests pass AND coverage >= 85% AND no spec drift AND no high/critical vulnerabilities.
+
+Log: "Phase 7 complete -- all validations passed. Modernization successful."
+
+---
+
+## Output: Upgrade Report
+
+Write `.modernize/UPGRADE_REPORT.md` with the following structure:
+
 ```markdown
 # Dependency Modernization Report
 
-**Date**: {date}
-**Project**: {name}
+**Date**: <ISO date>
+**Project**: <project name from package.json>
 
 ## Summary
 
-- **Dependencies upgraded**: {X} packages
-- **Major version bumps**: {X} packages
-- **Breaking changes**: {X} fixed
-- **Tests fixed**: {X} tests
-- **New tests added**: {X} tests
-- **Coverage improvement**: {before}% → {after}%
-- **Specs updated**: {X} specs
+- **Dependencies upgraded**: X packages
+- **Major version bumps**: X packages
+- **Breaking changes fixed**: X
+- **Tests fixed/added**: X tests
+- **Coverage**: X% -> Y%
+- **Specs updated**: X specs
+- **Skipped packages**: X (see details below)
 
 ## Upgraded Dependencies
 
 | Package | Old Version | New Version | Breaking? |
 |---------|-------------|-------------|-----------|
-| react | 17.0.2 | 18.3.1 | Yes |
-| next | 13.5.0 | 14.2.0 | Yes |
-| ... | ... | ... | ... |
+| <name>  | <old>       | <new>       | Yes/No    |
+
+## Skipped Packages
+
+<List any packages that could not be upgraded and why>
 
 ## Breaking Changes Fixed
 
-1. **React 18 Automatic Batching**
-   - Affected: User state management
-   - Fix: Updated useEffect dependencies
-   - Spec: No behavior change
-   - Tests: Added async state tests
-
-2. **Next.js 14 App Router**
-   - Affected: Routing architecture
-   - Fix: Migrated pages/ to app/
-   - Spec: Updated file paths
-   - Tests: Updated route tests
+For each breaking change:
+- **Package**: <name>
+- **Affected feature**: <feature name>
+- **Fix**: <what was changed>
+- **Spec impact**: <behavior change or implementation only>
 
 ## Spec Updates
 
-- Updated technical requirements with new versions
-- Updated file paths for App Router migration
-- No functional spec changes (behavior preserved)
+<List specs that were modified and why>
 
 ## Test Coverage
 
-- Before: 78%
-- After: 87%
-- New tests: 45 tests added
-- All modules: ✅ 85%+
+- Before: X%
+- After: Y%
+- New tests: Z
 
-## Validation
+## Validation Results
 
-- ✅ All tests passing
-- ✅ Build successful
-- ✅ /speckit.analyze: No drift
-- ✅ npm audit: 0 high/critical
-- ✅ Coverage: 87% (target: 85%+)
-
-## Next Steps
-
-Application is now:
-- ✅ Fully modernized (latest dependencies)
-- ✅ 100% spec coverage maintained
-- ✅ Tests passing with high coverage
-- ✅ Specs synchronized with implementation
-- ✅ Ready for ongoing spec-driven development
+- Build: pass/fail
+- Tests: X passing, Y failing
+- Coverage: X% (target: 85%+)
+- Spec drift: none/details
+- Vulnerabilities: X high, Y critical (or none)
 ```
 
----
-
-## Configuration in State File
-
-The modernize flag is set during Gear 1:
-
-```json
-{
-  "path": "brownfield",
-  "modernize": true,
-  "metadata": {
-    "modernizeRequested": "2024-11-17T12:00:00Z",
-    "upgradeScope": "all-dependencies",
-    "targetCoverage": 85
-  }
-}
-```
-
----
-
-## When Modernize Runs
-
-**In Cruise Control**:
-- Automatically runs after Gear 6 if `modernize: true`
-
-**In Manual Mode**:
-- Skill becomes available after Gear 6 completes
-- User explicitly invokes: `/stackshift.modernize` or skill auto-activates
+After writing the report, update `.stackshift-state.json` with `modernizeStatus: "complete"`.
 
 ---
 
 ## Success Criteria
 
-Modernization complete when:
-- ✅ All dependencies updated to latest stable versions
-- ✅ All tests passing
-- ✅ Test coverage ≥ 85% on all modules
-- ✅ Build successful (no compilation errors)
-- ✅ /speckit.analyze shows no drift
-- ✅ No high/critical security vulnerabilities
-- ✅ Specs updated where behavior changed
-- ✅ Upgrade report generated
-
----
-
-## Benefits of Brownfield Upgrade
-
-### vs. Standard Brownfield:
-- ✅ **Modern dependencies** (not stuck on old versions)
-- ✅ **Security updates** (latest patches)
-- ✅ **Performance improvements** (newer libraries often faster)
-- ✅ **New features** (latest library capabilities)
-- ✅ **Reduced technical debt** (no old dependencies)
-
-### vs. Greenfield:
-- ✅ **Faster** (upgrade vs. rebuild)
-- ✅ **Lower risk** (incremental changes vs. rewrite)
-- ✅ **Spec-guided** (specs help fix breaking changes)
-- ✅ **Keeps working code** (only changes dependencies)
-
-### Use Case:
-Perfect for teams that want to modernize without full rewrites. Get the benefits of modern tooling while maintaining existing features.
-
----
-
-## Technical Approach
-
-### Spec-Driven Upgrade Strategy
-
-1. **Specs as Safety Net**:
-   - Every feature has acceptance criteria
-   - Run tests against specs after each upgrade
-   - If tests fail, specs guide the fix
-
-2. **Incremental Upgrades**:
-   - Upgrade in phases (minor first, then majors)
-   - Run tests after each phase
-   - Rollback if too many failures
-
-3. **Coverage as Quality Gate**:
-   - Must maintain 85%+ throughout upgrade
-   - Add tests for new library behaviors
-   - Ensure edge cases covered
-
-4. **Spec Synchronization**:
-   - If library changes behavior, update spec
-   - If implementation changes, update spec
-   - /speckit.analyze validates alignment
-
----
-
-**Result**: A fully modernized application under complete spec-driven control!
+Modernization is complete when ALL of:
+- All dependencies updated to latest stable versions (or documented as skipped)
+- All tests passing (zero failures)
+- Test coverage >= 85% on all modules
+- Build successful
+- No spec drift (verified by `/speckit.analyze` or manual check)
+- No high/critical security vulnerabilities (or documented with user acknowledgment)
+- Specs updated where behavior changed
+- `.modernize/UPGRADE_REPORT.md` generated
+- `.stackshift-state.json` updated with `modernizeStatus: "complete"`

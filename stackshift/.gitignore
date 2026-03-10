@@ -1,0 +1,51 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+
+# Spec Kit artifacts (created by specify init or StackShift)
+# Track StackShift and Spec Kit commands, ignore user-added commands
+!.claude/
+!.claude/commands/
+.claude/commands/*
+!.claude/commands/stackshift.*.md
+!.claude/commands/speckit.*.md
+!.claude/settings.json
+
+# Modernization artifacts (created during brownfield facelift)
+.modernize/
+
+specs/
+.stackshift-state.json
+.stackshift/
+analysis-report.md
+docs/reverse-engineering/
+
+# Local plugin artifacts (installed by other plugins, user-specific)
+.agentvibes/
+.bmad/
+utils/
+.claude/audio/
+.claude/config/
+.claude/hooks/
+.claude/personalities/
+.claude/activation-instructions
+.claude/github-star-reminder.txt
+.claude/piper-voices-dir.txt
+.claude/tts-provider.txt
+.claude/tts-verbosity.txt
+.claude/tts-voice.txt
+
+# Local overrides (user-specific, not version controlled)
+.specify/config/sync-rules.local.json
+.specify/memory/
+
+# Downloaded toolkits (session-specific)
+.speckit/
+
+# StackShift Analysis Cache
+.stackshift-analysis/
+
+# AST Analysis build output
+scripts/ast-analysis/dist/
+scripts/ast-analysis/node_modules/

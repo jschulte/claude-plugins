@@ -1,12 +1,14 @@
 # Scan Integration Signals
 
-Detailed instructions for scanning a repository for integration signals across 10 categories.
+Instructions for scanning a repository for integration signals across 10 signal categories.
+
+All path variables and command substitutions MUST be double-quoted in shell commands.
 
 ---
 
 ## Overview
 
-Run all 10 signal scanners on a repository to extract names of related services, packages, databases, and infrastructure. Each scanner extracts a list of **signal entries** with:
+Scan a repository across all 10 signal categories to extract names of related services, packages, databases, and infrastructure. Each category scan extracts a list of **signal entries** with:
 
 - **name**: The service/package/resource name
 - **category**: Which of the 10 signal categories

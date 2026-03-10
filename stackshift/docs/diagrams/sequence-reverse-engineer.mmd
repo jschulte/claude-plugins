@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant Claude as Claude AI
+    participant Tool as Reverse-engineer Tool
+    participant Utils as Utilities
+    participant State as StateManager
+    participant AST as AST Parser
+    participant FileUtils as FileUtils
+
+    Claude -> Tool: reverseEngineer()
+    activate Tool
+    Tool -> State: load()
+    State -> Tool: current state
+    Tool -> FileUtils: readSourceFiles()
+    FileUtils -> Tool: source code
+    Tool -> AST: parse(sourceCode)
+    AST -> Tool: AST nodes
+    Tool -> Utils: extractBusinessLogic(ast)
+    Utils -> Tool: business logic
+    Tool -> State: update(reverseEngineeringResults)
+    State -> Tool: state updated
+    deactivate Tool
+    Tool -> Claude: reverse engineering complete
+    Note over State: Business logic extracted

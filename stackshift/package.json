@@ -1,0 +1,49 @@
+{
+  "name": "stackshift",
+  "version": "2.5.0",
+  "type": "module",
+  "description": "Reverse engineering toolkit with manual control - shift gears in your codebase. Transform any application into a fully-specified, spec-driven project with GitHub Spec Kit. Dual workflow: extract business logic for rebuilds (Greenfield) or manage existing code with specs (Brownfield).",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "claude-plugin",
+    "reverse-engineering",
+    "specifications",
+    "documentation",
+    "spec-driven",
+    "github-spec-kit",
+    "stackshift",
+    "migration",
+    "refactoring",
+    "openapi",
+    "json-schema"
+  ],
+  "author": "Jonah Schulte",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://ghe.coxautoinc.com/DDC-WebPlatform/stackshift.git"
+  },
+  "homepage": "https://ghe.coxautoinc.com/DDC-WebPlatform/stackshift#readme",
+  "bugs": {
+    "url": "https://ghe.coxautoinc.com/DDC-WebPlatform/stackshift/issues"
+  },
+  "scripts": {
+    "test": "cd scripts/ast-analysis && npm test",
+    "test:watch": "cd scripts/ast-analysis && npm run test:watch",
+    "validate": "bash scripts/validate-plugin.sh",
+    "build:ast": "cd scripts/ast-analysis && npm install && npm run build"
+  },
+  "files": [
+    ".claude-plugin/",
+    ".claude/",
+    "skills/",
+    "agents/",
+    "commands/",
+    "scripts/",
+    "web/",
+    "docs/",
+    "README.md",
+    "LICENSE"
+  ]
+}

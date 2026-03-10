@@ -1,65 +1,49 @@
 ---
 name: refresh-docs
-description: Incrementally update reverse-engineering docs based on git changes since they were last generated. Reads the commit hash from .stackshift-docs-meta.json, diffs against HEAD, analyzes only the changed files, and surgically updates the affected docs. Saves time and cost compared to full regeneration.
+description: Detects code changes since reverse-engineering docs were last generated and surgically updates only the affected documentation files. Triggered by "refresh the docs", "update reverse-engineering docs", or "sync docs with latest code".
+allowed-tools: Bash, Read, Write, Edit, Glob, Grep, Task
 ---
 
 # Refresh Docs
 
-**Incrementally update reverse-engineering docs from git changes — no full regeneration needed.**
+Incrementally update reverse-engineering docs from git changes. No full regeneration needed.
 
 **Estimated Time:** 2-15 minutes (depends on change volume)
 **Prerequisites:** Reverse-engineering docs exist with `.stackshift-docs-meta.json`
-**Output:** Updated docs in `docs/reverse-engineering/` with new commit hash
+**Output:** Updated docs in `docs/reverse-engineering/` with refreshed commit hash
 
 ---
 
-## When to Use This Skill
+## Arguments
 
-Use this skill when:
-- Reverse-engineering docs already exist from a previous run
-- Code has changed since docs were generated (new commits)
-- You want to keep docs up to date without full regeneration
-- Cost/time matters — only analyze what changed
+| Argument | Values | Default | Description |
+|----------|--------|---------|-------------|
+| mode | `smart`, `full` | `smart` | `smart` = incremental update of affected docs only. `full` = regenerate all 11 docs via `/stackshift.reverse-engineer`. |
 
-**Trigger Phrases:**
+Auto-detect `full`: if >60% of source files changed, major version bumps in package.json/go.mod, new top-level directories added, or framework migration detected, recommend `full` mode to the user.
+
+---
+
+## When to Activate
+
+Activate when the user says any of:
 - "Update the reverse-engineering docs"
 - "Refresh the docs"
 - "Sync docs with latest code"
 - "What changed since docs were generated?"
 - "Are the docs out of date?"
 
----
-
-## What This Skill Does
-
-```
-Previous Docs (commit abc123)           Latest Code (commit def456)
-┌─────────────────────────┐            ┌─────────────────────────┐
-│ 11 reverse-eng docs     │            │ New commits since abc123│
-│ .stackshift-docs-meta   │──── diff ──│ Changed files list      │
-└─────────────────────────┘            └─────────────────────────┘
-                                                │
-                                       Analyze only changes
-                                                │
-                                                ▼
-                                       Updated docs + new hash
-```
-
-1. Reads the pinned commit hash from `.stackshift-docs-meta.json`
-2. Runs `git diff` between that hash and HEAD
-3. Categorizes changed files by which docs they affect
-4. Analyzes only the changed code
-5. Surgically updates affected sections in the relevant docs
-6. Updates the commit hash in metadata
+Also activate when: reverse-engineering docs exist, code has changed since they were generated, and the user wants to keep docs current without full regeneration.
 
 ---
 
 ## Process
 
-### Step 1: Read Metadata and Assess Changes
+### Step 1: Read Metadata and Validate Git State
+
+Log: "Step 1: Reading metadata and validating git state..."
 
 ```bash
-# Read the pinned commit hash
 META_FILE="docs/reverse-engineering/.stackshift-docs-meta.json"
 
 if [ ! -f "$META_FILE" ]; then
@@ -68,7 +52,13 @@ if [ ! -f "$META_FILE" ]; then
 fi
 
 PINNED_HASH=$(cat "$META_FILE" | jq -r '.commit_hash')
-CURRENT_HASH=$(git rev-parse HEAD)
+CURRENT_HASH=$(git rev-parse HEAD 2>/dev/null)
+
+if [ $? -ne 0 ]; then
+  echo "ERROR: git rev-parse failed. Verify this is a valid git repository."
+  exit 1
+fi
+
 PINNED_DATE=$(cat "$META_FILE" | jq -r '.commit_date')
 
 echo "Docs pinned to: $PINNED_HASH ($PINNED_DATE)"
@@ -79,16 +69,32 @@ if [ "$PINNED_HASH" = "$CURRENT_HASH" ]; then
   exit 0
 fi
 
-# Count commits since docs were generated
+# Verify pinned commit exists
 COMMIT_COUNT=$(git rev-list --count "$PINNED_HASH".."$CURRENT_HASH" 2>/dev/null || echo "unknown")
+if [ "$COMMIT_COUNT" = "unknown" ]; then
+  echo "ERROR: Pinned commit $PINNED_HASH not found. It may have been rebased or force-pushed."
+  echo "Falling back to full refresh via /stackshift.reverse-engineer."
+  exit 1
+fi
+
 echo "Commits since last generation: $COMMIT_COUNT"
 ```
 
+If any git command fails (non-zero exit), report the error to the user. Common causes: shallow clone (suggest `git fetch --unshallow`), corrupted repo (suggest `git fsck`), or missing commit (suggest full refresh).
+
+Log: "Step 1 complete: $COMMIT_COUNT commits to analyze."
+
 ### Step 2: Get Changed Files and Commit Summary
+
+Log: "Step 2: Gathering changed files..."
 
 ```bash
 # Get list of changed files with change type
-git diff --name-status "$PINNED_HASH"..HEAD
+git diff --name-status "$PINNED_HASH"..HEAD 2>/dev/null
+if [ $? -ne 0 ]; then
+  echo "ERROR: git diff failed. Check repository integrity."
+  exit 1
+fi
 
 # Get commit log summary (for context)
 git log --oneline "$PINNED_HASH"..HEAD
@@ -97,26 +103,26 @@ git log --oneline "$PINNED_HASH"..HEAD
 git diff --stat "$PINNED_HASH"..HEAD
 ```
 
-**Present to user:**
+Present the change summary to the user:
 ```
-Docs were generated at commit abc1234 (2025-12-15)
+Docs generated at commit abc1234 (2025-12-15)
 Current HEAD: def4567 (2026-02-12)
-
 42 commits, 156 files changed:
   src/api/        - 12 files (endpoints, middleware)
-  src/models/     - 3 files (User, Product schemas)
-  src/services/   - 8 files (business logic)
-  package.json    - dependency updates
-  .env.example    - new env vars
-  docker-compose  - infrastructure changes
+  src/models/     - 3 files (schema changes)
   tests/          - 15 new test files
-
 Estimated refresh time: ~5 minutes
 ```
 
+If mode is `full` (user-requested or auto-detected), skip to the Full Refresh section below.
+
+Log: "Step 2 complete: [N] files changed across [M] directories."
+
 ### Step 3: Map Changes to Affected Docs
 
-Categorize each changed file by which reverse-engineering doc(s) it affects:
+Log: "Step 3: Mapping changed files to docs..."
+
+Categorize each changed file by which documentation file(s) it affects:
 
 | Changed File Pattern | Affected Doc(s) |
 |---|---|
@@ -133,56 +139,66 @@ Categorize each changed file by which reverse-engineering doc(s) it affects:
 | Any tech stack changes | decision-rationale.md |
 | External service integrations | integration-points.md |
 
-**Files that don't map to any doc** (e.g., `.gitignore` changes) can be skipped.
+Skip files that do not map to any doc (e.g., `.gitignore` changes).
 
-**Output a refresh plan:**
-```
-Docs to update:
-  functional-specification.md  - 8 changed files affect this doc
-  data-architecture.md         - 3 changed files (schema changes)
-  configuration-reference.md   - 2 changed files (new env vars)
-  test-documentation.md        - 15 new test files
+Output a refresh plan showing which docs need updates and which are unchanged.
 
-Docs unchanged:
-  visual-design-system.md      - no UI changes detected
-  observability-requirements.md - no monitoring changes
-  business-context.md          - no business context changes
-  decision-rationale.md        - no tech stack changes
-  operations-guide.md          - no infra changes
-  integration-points.md        - no integration changes
-  technical-debt-analysis.md   - no debt-relevant changes
-```
+Log: "Step 3 complete: [N] docs need updates, [M] docs unchanged."
 
 ### Step 4: Analyze Changes and Update Docs
 
-For each affected doc, use the Task tool with `subagent_type=Explore` (or `stackshift:code-analyzer`) to:
+Log: "Step 4: Updating docs..."
 
-1. **Read the current doc** to understand its structure and content
-2. **Read the changed files** that map to this doc
-3. **Read the git diff** for those files to understand what specifically changed
-4. **Determine updates needed:**
-   - New sections to add (e.g., new API endpoint → new FR)
-   - Existing sections to modify (e.g., schema change → update data model)
-   - Sections to remove (e.g., deleted feature → remove FR)
-   - No change needed (e.g., refactor that doesn't change behavior)
+For each affected doc, launch a separate Task agent with `subagent_type=Explore` (or `stackshift:stackshift-code-analyzer:AGENT`). Each agent receives the doc path and its mapped changed files. Agents may run in parallel.
 
-**Update strategy per change type:**
+Each agent must:
 
-| Change Type | Update Approach |
+1. Read the current doc to understand its structure
+2. Read the changed files that map to this doc
+3. Read the git diff for those files: `git diff "$PINNED_HASH"..HEAD -- "$file"`
+4. Determine updates needed:
+   - New sections to add (e.g., new API endpoint = new FR)
+   - Existing sections to modify (e.g., schema change = update data model)
+   - Sections to remove (e.g., deleted feature = remove FR)
+   - No change needed (e.g., refactor that does not change behavior)
+
+Update strategy per change type:
+
+| Change Type | Action |
 |---|---|
-| **New file** (Added) | Add new section/entry to relevant doc |
-| **Modified file** | Read diff, update affected sections, preserve unchanged |
+| **New file** (Added) | Add new section/entry to the relevant doc |
+| **Modified file** | Read diff, update affected sections, preserve unchanged content |
 | **Deleted file** | Mark related sections as removed or deprecated |
-| **Renamed file** | Update file paths in brownfield docs |
+| **Renamed file** | Update file paths in the doc |
 | **New dependency** | Add to decision-rationale.md and/or integration-points.md |
 | **Config change** | Update configuration-reference.md |
 | **New test** | Update test-documentation.md coverage |
 
-**Important: Surgical updates only.** Do NOT rewrite entire docs. Edit specific sections using the Edit tool to preserve unchanged content.
+Surgical updates only -- rewriting entire docs risks losing manually-added content and wastes tokens. Use the Edit tool to modify specific sections.
+
+Always quote file paths in git commands to handle spaces and special characters.
+
+Track the result of each doc update: record which docs succeeded and which failed.
+
+Log after each doc: "Updated [doc-name] ([N] sections changed)" or "FAILED to update [doc-name]: [reason]"
+
+### Step 4b: Verify Updates
+
+Before proceeding, verify that all targeted docs were successfully updated:
+
+1. For each doc that was updated, read the modified sections and confirm the changes match the diff analysis.
+2. If any doc update failed or a doc was inadvertently overwritten, restore it from git (`git checkout HEAD -- "path/to/doc"`) and retry with the Edit tool.
+3. Build two lists: `successful_docs` (docs that were correctly updated) and `failed_docs` (docs that could not be updated).
+
+If any docs remain in `failed_docs` after retry, keep the old commit hash for those docs in the metadata (Step 5) and note the failures in the summary (Step 7).
+
+Log: "Step 4b complete: [N] docs verified, [M] failures."
 
 ### Step 5: Update Metadata
 
-After all docs are updated, update the metadata file:
+Step 5 must complete before Step 6 (Step 6 uses values computed here).
+
+Log: "Step 5: Updating metadata..."
 
 ```bash
 NEW_HASH=$(git rev-parse HEAD)
@@ -193,9 +209,10 @@ REFRESHED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 Update `docs/reverse-engineering/.stackshift-docs-meta.json`:
 - Set `commit_hash` to new HEAD
 - Set `commit_date` to new date
-- For each updated doc, set its `generated_at` to now and `commit_hash` to new HEAD
+- For each successfully updated doc, set its `last_updated` to now and `commit_hash` to new HEAD
 - For unchanged docs, keep their original timestamps
-- Add a `refresh_history` array tracking each refresh:
+- For failed docs, keep their original `commit_hash` (do not advance)
+- Add an entry to the `refresh_history` array:
 
 ```json
 {
@@ -212,157 +229,98 @@ Update `docs/reverse-engineering/.stackshift-docs-meta.json`:
       "refreshed_at": "<REFRESHED_AT>",
       "commits_analyzed": 42,
       "files_changed": 156,
-      "docs_updated": ["functional-specification.md", "data-architecture.md", "configuration-reference.md", "test-documentation.md"],
-      "docs_unchanged": ["visual-design-system.md", "observability-requirements.md", "..."]
+      "docs_updated": ["functional-specification.md", "data-architecture.md"],
+      "docs_unchanged": ["visual-design-system.md", "..."],
+      "docs_failed": []
     }
   ],
   "docs": {
     "functional-specification.md": { "generated_at": "<original>", "last_updated": "<REFRESHED_AT>", "commit_hash": "<NEW_HASH>" },
-    "data-architecture.md": { "generated_at": "<original>", "last_updated": "<REFRESHED_AT>", "commit_hash": "<NEW_HASH>" },
-    "configuration-reference.md": { "generated_at": "<original>", "last_updated": "<REFRESHED_AT>", "commit_hash": "<NEW_HASH>" },
-    "test-documentation.md": { "generated_at": "<original>", "last_updated": "<REFRESHED_AT>", "commit_hash": "<NEW_HASH>" },
-    "visual-design-system.md": { "generated_at": "<original>", "last_updated": "<original>", "commit_hash": "<OLD_HASH>" },
-    "...": "unchanged docs keep old timestamps"
+    "visual-design-system.md": { "generated_at": "<original>", "commit_hash": "<OLD_HASH>" }
   }
 }
 ```
 
+The `last_updated` field is optional and added by refresh-docs. Consumers that do not find it should treat the doc as never refreshed (only the original `generated_at` applies).
+
+Log: "Step 5 complete: Metadata updated."
+
 ### Step 6: Update Doc Headers
 
-For each updated doc, update the metadata header line:
+Log: "Step 6: Updating doc headers..."
+
+For each successfully updated doc, update the metadata header line:
 
 ```markdown
 > **Generated by StackShift** | Commit: `<new-short-hash>` | Updated: `<REFRESHED_AT>` | Originally generated: `<original-date>`
 ```
 
+Do not update headers for unchanged or failed docs.
+
+Log: "Step 6 complete: [N] headers updated."
+
 ### Step 7: Present Summary
 
-```
-Docs Refresh Complete
-═════════════════════
+Log: "Step 7: Generating summary..."
 
-Analyzed: 42 commits (abc1234 → def4567)
-Changed files: 156
-Time: 4 minutes
-
-Updated docs (4):
-  functional-specification.md
-    + Added FR-008: Bulk export feature
-    ~ Updated FR-003: Modified user registration flow
-    - Removed FR-005: Legacy import (deleted)
-
-  data-architecture.md
-    + Added Product.variants field
-    ~ Updated User model (new preferences column)
-
-  configuration-reference.md
-    + Added EXPORT_BATCH_SIZE env var
-    + Added REDIS_CLUSTER_URL env var
-
-  test-documentation.md
-    ~ Coverage updated: 67% → 74%
-    + 15 new test files documented
-
-Unchanged docs (7):
-  visual-design-system.md, observability-requirements.md,
-  business-context.md, decision-rationale.md, operations-guide.md,
-  integration-points.md, technical-debt-analysis.md
-
-Next refresh: Run /stackshift.refresh-docs again after more commits.
-```
+Present a summary to the user showing:
+- Commits analyzed (count, hash range)
+- Files changed
+- Each updated doc with what was added (+), modified (~), or removed (-)
+- List of unchanged docs
+- List of failed docs (if any), with reasons
+- Suggestion to run `/stackshift.refresh-docs` again after future commits
 
 ---
 
-## Modes
+## Full Refresh Mode
 
-### Default: Smart Refresh
-- Only updates docs affected by changes
-- Preserves unchanged sections
-- Fast and cost-effective
+If mode is `full` (user-requested or auto-detected):
 
-### Full Refresh (override)
-If the user says "do a full refresh" or changes are too extensive (100+ files, major refactor):
-- Regenerate all 11 docs from scratch using `/stackshift.reverse-engineer`
-- Equivalent to a full Gear 2 run
-- Use when: major refactors, framework migrations, or when incremental updates would miss systemic changes
-
-**Auto-detect when full refresh is recommended:**
+Auto-detect triggers:
 - More than 60% of source files changed
-- Package.json/go.mod major version bumps
+- Major version bumps in package.json/go.mod
 - New top-level directories added
-- Framework migration detected (e.g., Express → Fastify)
+- Framework migration detected (e.g., Express to Fastify)
 
+When auto-detected, prompt the user:
 ```
 Large change detected: 78% of source files modified.
 A full refresh is recommended over incremental update.
-
 A) Full refresh (regenerate all docs, ~30 min)
 B) Incremental anyway (faster but may miss systemic changes)
 ```
+
+For full refresh, delegate to `/stackshift.reverse-engineer` to regenerate all 11 docs from scratch.
 
 ---
 
 ## Edge Cases
 
 ### Docs exist but no metadata file
-Legacy docs from before commit tracking. Offer two options:
+Offer two options:
 1. Run `/stackshift.reverse-engineer` to regenerate with metadata
 2. Create metadata file pinned to current HEAD (treats current docs as up-to-date)
 
 ### Pinned commit no longer exists
-The commit was rebased or force-pushed away. Fall back to full refresh.
+The commit was rebased or force-pushed away. Fall back to full refresh via `/stackshift.reverse-engineer`.
 
 ### No git repository
-Not a git repo. Cannot do incremental updates. Guide user to full regeneration.
+Cannot do incremental updates. Guide the user to full regeneration via `/stackshift.reverse-engineer`.
 
 ### Merge commits
 When the diff spans merge commits, use `git diff` (not `git log -p`) to get the net effect rather than per-commit changes.
 
----
-
-## Integration
-
-### With Cruise Control
-Cruise control can optionally run refresh-docs instead of full reverse-engineer if docs already exist:
-```
-Existing docs detected (pinned to abc1234, 15 commits behind).
-A) Refresh docs incrementally (~5 min)
-B) Full regeneration (~30 min)
-```
-
-### With Batch Processing
-Batch mode can run refresh-docs on repos that already have docs, saving significant time when re-processing a large monorepo.
-
-### With CI/CD
-Can be run in CI to keep docs updated on every merge to main:
-```yaml
-- name: Refresh StackShift docs
-  run: |
-    # Check if docs need refresh
-    if [ -f "docs/reverse-engineering/.stackshift-docs-meta.json" ]; then
-      echo "Refreshing docs..."
-      # Trigger /stackshift.refresh-docs
-    fi
-```
-
----
-
-## Success Criteria
-
-- ✅ Changes since pinned commit identified and categorized
-- ✅ Only affected docs updated (unchanged docs preserved)
-- ✅ Metadata file updated with new commit hash
-- ✅ Refresh history logged
-- ✅ Doc headers updated with new timestamps
-- ✅ Summary shows what was added/modified/removed per doc
+### Git command failures
+If `git diff` or other git commands fail, report the error and suggest: `git fetch --unshallow` for shallow clones, `git fsck` for corruption, or full refresh if the pinned commit is unreachable.
 
 ---
 
 ## Technical Notes
 
-- Use `git diff --name-status` for file-level change detection (fast)
-- Use `git diff <hash>..HEAD -- <file>` for content-level analysis of specific files
-- Parallelize: Read changed files for different docs concurrently using Task agents
-- For large diffs (500+ files), batch the analysis into groups of 50 files
-- Preserve doc structure — use Edit tool for surgical updates, not Write for full rewrites
-- The metadata JSON should be committed to git so team members share the same pinned hash
+- Use `git diff --name-status` for file-level change detection (fast).
+- Use `git diff "$PINNED_HASH"..HEAD -- "$file"` for content-level analysis. Always quote paths.
+- Launch separate Task agents per doc for parallel analysis.
+- For large diffs (500+ files), batch the analysis into groups of 50 files.
+- Preserve doc structure -- use Edit tool for surgical updates, not Write for full rewrites.
+- Commit the metadata JSON to git so team members share the same pinned hash.

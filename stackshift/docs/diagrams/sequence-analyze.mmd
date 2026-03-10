@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant Claude as Claude AI
+    participant Tool as Analyze Tool
+    participant Utils as Utilities
+    participant State as StateManager
+    participant FileUtils as FileUtils
+    participant Security as SecurityValidator
+
+    Claude -> Tool: analyze(directory)
+    activate Tool
+    Tool -> Security: validateDirectory()
+    Security -> Tool: validated path
+    Tool -> FileUtils: findFiles(patterns)
+    FileUtils -> Tool: file list
+    Tool -> Utils: detectTechStack(files)
+    Utils -> Tool: tech stack info
+    Tool -> State: update(analysisResults)
+    State -> Tool: state updated
+    deactivate Tool
+    Tool -> Claude: analysis complete
+    Note over State: State persisted to .stackshift-state.json

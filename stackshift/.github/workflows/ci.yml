@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop, 'claude/**' ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  validate-state:
+    name: Validate StackShift State
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate state file
+        run: |
+          if [ -f ".stackshift-state.json" ]; then
+            echo "Validating .stackshift-state.json..."
+            cat .stackshift-state.json | jq empty && echo "✅ Valid JSON"
+          else
+            echo "No state file found - skipping validation"
+          fi
+
+  build-plugin:
+    name: Validate Claude Code Plugin
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate plugin structure
+        run: |
+          echo "Validating Claude Code plugin structure..."
+
+          # Check for required plugin files at root level
+          [ -f ".claude-plugin/plugin.json" ] && echo "✅ plugin.json found" || echo "❌ plugin.json missing"
+
+          # Validate plugin.json
+          if [ -f ".claude-plugin/plugin.json" ]; then
+            cat .claude-plugin/plugin.json | jq empty && echo "✅ Valid plugin.json"
+          fi
+
+          # Check for skills
+          echo "Checking skills..."
+          find skills -name "SKILL.md" -type f | wc -l | xargs -I {} echo "Found {} skills"
+
+          # Check for agents
+          echo "Checking agents..."
+          find agents -type d -mindepth 1 -maxdepth 1 | wc -l | xargs -I {} echo "Found {} agents"
+
+  typecheck:
+    name: TypeScript Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: cd scripts/ast-analysis && npm ci
+
+      - name: Type check
+        run: cd scripts/ast-analysis && npx tsc --noEmit
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: cd scripts/ast-analysis && npm ci
+
+      - name: Run tests
+        run: cd scripts/ast-analysis && npm test
+
+  validate-plugin:
+    name: Validate Plugin Integrity
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run validation script
+        run: bash scripts/validate-plugin.sh

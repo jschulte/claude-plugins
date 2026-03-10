@@ -1,11 +1,11 @@
 {
   "name": "stackshift",
-  "version": "2.3.0",
-  "description": "Reverse engineering toolkit with manual control — shift gears in your codebase. Analyze, document, and spec-drive any project through a 6-gear process. Dual workflow: Greenfield (extract for rebuild) or Brownfield (manage existing). Includes BMAD synthesis, architecture generation, multi-repo reimagine, and incremental doc refresh.",
+  "version": "2.5.1",
+  "description": "Reverse engineering toolkit for Cox Automotive applications. Shift gears in your codebase through a 6-gear process. Auto-detects app type (Osiris, CMS, Generic). Dual workflow: Greenfield (extract for rebuild) or Brownfield (manage existing). Includes BMAD synthesis, architecture generation, multi-repo reimagine, and incremental doc refresh.",
   "author": {
-    "name": "Jonah Schulte"
+    "name": "Jonah Schulte / DDC Web Platform"
   },
-  "repository": "https://github.com/jschulte/stackshift",
+  "repository": "git@ghe.coxautoinc.com:DDC-WebPlatform/stackshift.git",
   "license": "MIT",
   "keywords": [
     "stackshift",
@@ -23,6 +23,12 @@
     "modernization",
     "validation",
     "code-review",
-    "ecosystem-discovery"
+    "ecosystem-discovery",
+    "integration-analysis",
+    "cox-automotive",
+    "osiris",
+    "widgets",
+    "wsm-modules",
+    "ws-scripts"
   ]
 }

@@ -1,16 +1,16 @@
 {
-  "name": "jschulte",
+  "name": "DDC-WebPlatform",
   "owner": {
-    "name": "Jonah Schulte"
+    "name": "DDC WebPlatform"
   },
   "metadata": {
-    "description": "Developer tools and Claude Code plugins by Jonah Schulte",
-    "homepage": "https://github.com/jschulte"
+    "description": "Developer tools and Claude Code plugins by DDC WebPlatform",
+    "homepage": "https://ghe.coxautoinc.com/DDC-WebPlatform"
   },
   "plugins": [
     {
       "name": "stackshift",
-      "version": "2.0.0",
+      "version": "2.5.1",
       "source": ".",
       "description": "Reverse engineering toolkit - shift gears between tech stacks or manage existing code with GitHub Spec Kit. Start in reverse (engineering), shift through 6 gears, cruise into spec-driven development. Dual workflow: Greenfield (extract business logic) or Brownfield (manage existing). Interactive skills with auto-activation."
     }

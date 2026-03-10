@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant Claude as Claude AI
+    participant Tool as Create-specs Tool
+    participant Utils as Utilities
+    participant State as StateManager
+    participant SpecWriter as Spec Writer
+    participant FileUtils as FileUtils
+
+    Claude -> Tool: createSpecs()
+    activate Tool
+    Tool -> State: load()
+    State -> Tool: business logic
+    Tool -> SpecWriter: generateSpec(businessLogic)
+    Note over SpecWriter: Convert to Spec Kit format
+    SpecWriter -> Tool: spec documents
+    Tool -> FileUtils: writeSpecs(specs)
+    FileUtils -> Tool: files written
+    Tool -> State: update(specsCreated)
+    State -> Tool: state updated
+    deactivate Tool
+    Tool -> Claude: specs created
+    Note over State: Specs written to spec-kit/

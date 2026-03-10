@@ -1,6 +1,12 @@
 # Abstract Personas
 
-Detailed instructions for extracting source personas and mapping them to abstract portable roles.
+Extract source personas and map them to abstract portable roles.
+
+---
+
+## Reduced Coverage
+
+When `business-context.md` is unavailable (legacy 9-doc case), extract personas from `functional-specification.md` user stories and `integration-points.md` system actors only. Skip the business-context.md scan in Step 1. Persona definitions will lack business goal context -- note this with `[REDUCED COVERAGE - business-context.md unavailable]` in the persona mapping output.
 
 ---
 
@@ -178,8 +184,8 @@ After abstraction, verify:
 
 ### YOLO Mode
 - Apply classification rules automatically
-- Use best-effort for ambiguous cases
-- Mark uncertain mappings with `[AUTO-MAPPED]`
+- Resolve ambiguous cases by choosing the most restrictive classification (e.g., `[Admin]` over `[User]` when uncertain)
+- Mark uncertain mappings with `[AUTO-RESOLVED]`
 
 ### Guided Mode
 - Auto-classify obvious mappings

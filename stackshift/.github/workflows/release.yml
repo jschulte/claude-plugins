@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Package Plugin
+        run: |
+          mkdir -p dist/stackshift/.claude-plugin dist/stackshift/.claude/commands
+          cp -r .claude-plugin/* dist/stackshift/.claude-plugin/
+          cp -r skills dist/stackshift/
+          cp -r agents dist/stackshift/
+          cp .claude/commands/stackshift*.md dist/stackshift/.claude/commands/
+          cp .claude/commands/speckit*.md dist/stackshift/.claude/commands/
+          cp README.md LICENSE dist/stackshift/
+          tar -czf stackshift-plugin-v${{ steps.get_version.outputs.VERSION }}.tar.gz -C dist stackshift/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release v${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## StackShift v${{ steps.get_version.outputs.VERSION }}
+
+            ### Changes
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+
+            ### Installation
+
+            **Claude Code Plugin:**
+            ```bash
+            /install-plugin https://github.com/${{ github.repository }}
+            ```
+
+            ### Verification
+            ```bash
+            /stackshift.analyze
+            ```
+          draft: false
+          prerelease: false
+          files: |
+            stackshift-plugin-v${{ steps.get_version.outputs.VERSION }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

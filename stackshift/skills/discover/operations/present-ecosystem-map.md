@@ -185,14 +185,14 @@ After user confirms, create the batch session file and offer next steps.
 
 ### Create Batch Session
 
-Write `.stackshift-batch-session.json` in the starting repo's parent directory (or the starting repo itself if it's the root):
+Write `.stackshift-batch-session.json` in the starting repo directory (same location as `.stackshift/ecosystem-map.md`):
 
 ```json
 {
   "sessionId": "discover-{timestamp}",
   "startedAt": "{iso_date}",
   "batchRootDirectory": "{parent_directory_of_all_repos}",
-  "totalRepos": {confirmed_repo_count},
+  "totalRepos": "{length of discoveredRepos array}",
   "batchSize": 5,
   "answers": {},
   "processedRepos": [],

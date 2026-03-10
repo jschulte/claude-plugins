@@ -66,7 +66,7 @@ Compare discovered signal names against org repo names:
 ```bash
 # For each discovered name, check if a repo with that name exists
 for name in "${DISCOVERED_NAMES[@]}"; do
-  gh api "repos/{org}/${name}" --jq '.full_name' 2>/dev/null && echo "MATCH: $name"
+  gh api "repos/${GITHUB_ORG}/${name}" --jq '.full_name' 2>/dev/null && echo "MATCH: $name"
 done
 ```
 
@@ -210,7 +210,7 @@ Total: 6 repos discovered via GitHub search
 
 ---
 
-## Rate Limit Handling
+## Rate Limit and Error Handling
 
 ```bash
 # Check remaining rate limit before searching
@@ -219,16 +219,21 @@ echo "Search API calls remaining: $RATE_LIMIT"
 
 if [ "$RATE_LIMIT" -lt 5 ]; then
   RESET_TIME=$(gh api rate_limit --jq '.resources.search.reset')
-  echo "Rate limited. Resets at: $(date -r $RESET_TIME)"
-  echo "Skipping GitHub search — use local scan results only"
+  echo "Rate limited. Resets at: $(date -r "$RESET_TIME")"
+  echo "Skipping GitHub search -- use local scan results only"
 fi
 ```
+
+**Retry strategy for transient errors (5xx, network timeout):**
+1. Retry up to 2 times with 10-second backoff between attempts
+2. If all retries fail, skip that search query and continue with remaining queries
+3. If all queries fail, skip GitHub search entirely and note in the ecosystem map
 
 **Best practices:**
 - Check rate limit before starting
 - Use `sleep 6` between search API calls
 - Combine search terms with `OR` to reduce API calls
-- Cache results — don't re-search the same terms
+- Cache results -- do not re-search the same terms
 - Fall back gracefully if rate limited (local scan still works)
 
 ---

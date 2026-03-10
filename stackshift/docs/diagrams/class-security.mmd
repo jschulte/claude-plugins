@@ -1,0 +1,9 @@
+classDiagram
+    class SecurityValidator {
+        -string[] allowedBasePaths
+        +constructor(allowedBasePaths: string[]) void
+        +validateDirectory(directory: string) string
+        +validateFilePath(directory: string, filename: string) string
+        +sanitizeShellInput(input: string) string
+        +pathExists(filePath: string) Promise<boolean>
+    }

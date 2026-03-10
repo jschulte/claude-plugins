@@ -9,8 +9,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export interface BatchSessionAnswers {
-  detection_type?: 'generic' | 'monorepo-service' | 'nx-app' | 'turborepo-package' | 'lerna-package';
+  detection_type?: 'generic' | 'monorepo-service' | 'nx-app' | 'turborepo-package' | 'lerna-package' | 'osiris' | 'v9-velocity' | 'v9-viewmodel';
   route?: 'greenfield' | 'brownfield';
+  implementation_framework?: 'speckit' | 'bmad-autopilot' | 'bmad' | 'architect-only' | 'portable-extract' | 'widget-migrate';
   brownfield_mode?: 'standard' | 'upgrade';
   transmission?: 'manual' | 'cruise-control';
   clarifications_strategy?: 'defer' | 'prompt' | 'skip';
@@ -47,6 +48,7 @@ function findBatchSessionFile(startDir: string = process.cwd()): string | null {
       return batchSessionPath;
     }
     // Stop at git root to prevent path traversal beyond project
+    // Check for .git AFTER checking for batch session in the same directory
     if (fs.existsSync(path.join(currentDir, '.git'))) {
       return null;
     }

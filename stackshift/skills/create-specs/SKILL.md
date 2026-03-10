@@ -1,14 +1,22 @@
 ---
 name: create-specs
-description: Transform reverse-engineering documentation into GitHub Spec Kit format. Initializes .specify/ directory, creates constitution.md, generates specifications from reverse-engineered docs, and sets up for /speckit slash commands. This is Step 3 of 6 in the reverse engineering process.
+description: "Transforms 11 reverse-engineering documents from Gear 2 into GitHub Spec Kit specifications with three thoroughness levels (specs-only, specs+plans, specs+plans+tasks). Creates .specify/ directory with constitution, feature specs, implementation plans, and task breakdowns. Gear 3 of 6 in reverse engineering pipeline. Triggered by: 'create specs from reverse engineering docs', 'generate spec kit from documentation', 'run gear 3', 'transform docs into spec kit'."
+allowed-tools:
+  - Bash
+  - Read
+  - Write
+  - Edit
+  - Glob
+  - Grep
+  - Task
 ---
 
 # Create Specifications (GitHub Spec Kit Integration)
 
-**Step 3 of 6** in the Reverse Engineering to Spec-Driven Development process.
+**Gear 3 of 6** in the Reverse Engineering to Spec-Driven Development process.
 
 **Estimated Time:** 30 minutes (specs only) to 90 minutes (specs + plans + tasks)
-**Prerequisites:** Step 2 completed (`docs/reverse-engineering/` exists with 9 files)
+**Prerequisites:** Gear 2 completed (`docs/reverse-engineering/` exists with 11 files)
 **Output:** `.specify/` directory with GitHub Spec Kit structure
 
 ---
@@ -17,81 +25,46 @@ description: Transform reverse-engineering documentation into GitHub Spec Kit fo
 
 Gear 3 generates different levels of detail based on configuration set in Gear 1:
 
-**Option 1: Specs Only** (30 min - fast)
-- Generate `.specify/specs/###-feature-name/spec.md` for all features
+**Option 1: Specs Only** (30 min)
+- `.specify/specs/NNN-feature-name/spec.md` for all features
 - Constitution and folder structure
 - Ready for manual planning with `/speckit.plan`
 
-**Option 2: Specs + Plans** (45-60 min - recommended)
+**Option 2: Specs + Plans** (45-60 min)
 - Everything from Option 1
-- **PLUS**: Auto-generate `plan.md` for PARTIAL/MISSING features
+- Auto-generated `plan.md` for PARTIAL/MISSING features
 - Ready for manual task breakdown with `/speckit.tasks`
 
-**Option 3: Specs + Plans + Tasks** (90-120 min - complete roadmap)
+**Option 3: Specs + Plans + Tasks** (90-120 min)
 - Everything from Option 2
-- **PLUS**: Auto-generate comprehensive `tasks.md` (300-500 lines each)
-- Ready for immediate implementation
-- No additional planning needed
+- Auto-generated `tasks.md` (300-500 lines each)
+- Complete roadmap ready for immediate implementation
 
-**Configuration:** Set during Gear 1 (Analyze) via initial questionnaire, stored in `.stackshift-state.json`
-
----
-
-## When to Use This Skill
-
-Use this skill when:
-- You've completed Step 2 (Reverse Engineer)
-- Have comprehensive documentation in `docs/reverse-engineering/`
-- Ready to create formal specifications in GitHub Spec Kit format
-- Want to leverage `/speckit` slash commands for implementation
-
-**Trigger Phrases:**
-- "Create specifications from documentation"
-- "Transform docs into Spec Kit format"
-- "Set up GitHub Spec Kit"
-- "Initialize Spec Kit for this project"
+Configuration is set during Gear 1 (Analyze) via initial questionnaire, stored in `.stackshift-state.json`.
 
 ---
 
-## What This Skill Does
+## Step 1: Load Configuration
 
-**Automatically** transforms reverse-engineering documentation into **GitHub Spec Kit format** using F002 automated spec generation:
-
-1. **Read reverse engineering docs** - Parse `docs/reverse-engineering/functional-specification.md`
-2. **Extract ALL features** - Identify every feature (complete, partial, missing)
-3. **Generate constitution** - Create `.specify/memory/constitution.md` with project principles
-4. **Create feature specs** - Generate `.specify/specs/###-feature-name/spec.md` for EVERY feature
-5. **Implementation plans** - Create `plan.md` for PARTIAL and MISSING features only
-6. **Enable slash commands** - Set up `/speckit.*` commands
-
-**Critical**: This creates specs for **100% of features**, not just gaps!
-- ✅ Complete features get specs (for future spec-driven changes)
-- ⚠️ Partial features get specs + plans (show what exists + what's missing)
-- ❌ Missing features get specs + plans (ready to implement)
-
-**Result:** Complete spec coverage - entire application under spec control.
-
----
-
-## Configuration Check (FIRST STEP!)
-
-**Load state file to determine execution plan:**
+Verify the state file exists and load execution parameters.
 
 ```bash
-# Check thoroughness level (set in Gear 1)
+# Guard: state file must exist
+if [ ! -f .stackshift-state.json ]; then
+  echo "ERROR: .stackshift-state.json not found. Run Gear 1 (Analyze) first."
+  exit 1
+fi
+
+# Load configuration
 THOROUGHNESS=$(cat .stackshift-state.json | jq -r '.config.gear3_thoroughness // "specs"')
-
-# Check route
-ROUTE=$(cat .stackshift-state.json | jq -r '.path')
-
-# Check spec output location (Greenfield may have custom location)
+ROUTE=$(cat .stackshift-state.json | jq -r '.route // .path')
 SPEC_OUTPUT=$(cat .stackshift-state.json | jq -r '.config.spec_output_location // "."')
 
 echo "Route: $ROUTE"
 echo "Spec output: $SPEC_OUTPUT"
 echo "Thoroughness: $THOROUGHNESS"
 
-# Determine what to execute
+# Determine execution flags
 case "$THOROUGHNESS" in
   "specs")
     echo "Will generate: Specs only"
@@ -115,9 +88,9 @@ case "$THOROUGHNESS" in
     ;;
 esac
 
-# If custom location, ensure .specify directory exists there
+# If custom output location, create .specify directory there
 if [ "$SPEC_OUTPUT" != "." ]; then
-  echo "Creating .specify/ structure at custom location..."
+  echo "Creating .specify/ structure at custom location: $SPEC_OUTPUT"
   mkdir -p "$SPEC_OUTPUT/.specify/specs"
   mkdir -p "$SPEC_OUTPUT/.specify/memory"
   mkdir -p "$SPEC_OUTPUT/.specify/templates"
@@ -125,39 +98,28 @@ if [ "$SPEC_OUTPUT" != "." ]; then
 fi
 ```
 
-**Where specs will be written:**
+**Where specs are written:**
 
 | Route | Config | Specs Written To |
 |-------|--------|------------------|
-| Greenfield | spec_output_location set | `{spec_output_location}/.specify/specs/` |
+| Greenfield | `spec_output_location` set | `{spec_output_location}/.specify/specs/` |
 | Greenfield | Not set (default) | `./.specify/specs/` (current repo) |
 | Brownfield | Always current | `./.specify/specs/` (current repo) |
 
-
-**Common patterns:**
-- Same repo: `spec_output_location: "."` (default)
-- New repo: `spec_output_location: "~/git/my-new-app"`
-- Docs repo: `spec_output_location: "~/git/my-app-docs"`
-- Subfolder: `spec_output_location: "./new-version"`
+Log: "PROGRESS: Configuration loaded. Route=$ROUTE, Thoroughness=$THOROUGHNESS."
 
 ---
 
-## 🤖 Execution Instructions
+## Step 2: Install GitHub Spec Kit Scripts
 
-**IMPORTANT**: This skill uses automated spec generation tools from F002.
-
-### Step 1: Install GitHub Spec Kit Scripts
-
-**CRITICAL FIRST STEP:** Install the prerequisite scripts needed by `/speckit.*` commands:
+Install prerequisite scripts needed by `/speckit.*` commands downstream.
 
 ```bash
-# Install Spec Kit scripts to enable /speckit.* commands
 if [ -f ~/git/stackshift/scripts/install-speckit-scripts.sh ]; then
   ~/git/stackshift/scripts/install-speckit-scripts.sh .
 elif [ -f ~/stackshift/scripts/install-speckit-scripts.sh ]; then
   ~/stackshift/scripts/install-speckit-scripts.sh .
 else
-  # Download directly if script not available
   mkdir -p .specify/scripts/bash
   BASE_URL="https://raw.githubusercontent.com/github/spec-kit/main/scripts"
   curl -sSLf "$BASE_URL/bash/check-prerequisites.sh" -o .specify/scripts/bash/check-prerequisites.sh
@@ -166,297 +128,137 @@ else
   curl -sSLf "$BASE_URL/bash/update-agent-context.sh" -o .specify/scripts/bash/update-agent-context.sh
   curl -sSLf "$BASE_URL/bash/common.sh" -o .specify/scripts/bash/common.sh
   chmod +x .specify/scripts/bash/*.sh
-  echo "✅ Downloaded GitHub Spec Kit scripts"
 fi
 ```
 
-**Why this is needed:**
-- `/speckit.analyze` requires `scripts/bash/check-prerequisites.sh`
-- `/speckit.implement` requires `scripts/bash/check-prerequisites.sh`
-- `/speckit.plan` requires `scripts/bash/setup-plan.sh`
-- `/speckit.specify` requires `scripts/bash/create-new-feature.sh`
+Verify: confirm `.specify/scripts/bash/check-prerequisites.sh` exists. Without these scripts, Gear 4 (Gap Analysis) will fail when running `/speckit.analyze`.
 
-**Without these scripts, Gear 4 (Gap Analysis) will fail when trying to run `/speckit.analyze`!**
+Log: "PROGRESS: Spec Kit scripts installed."
 
-### Step 2: Generate Specifications
+---
 
-Use the manual reconciliation approach to generate all specifications:
+## Step 3: Generate Specifications (Automated Path)
+
+Execute the automated reconciliation prompt to generate all specs with 100% feature coverage.
 
 ```bash
-# Use the web reconciliation prompt to create all specs with 100% coverage
 cat web/reconcile-specs.md
 ```
 
-This will:
+Use the output of this prompt to:
 1. Parse `docs/reverse-engineering/functional-specification.md`
 2. Extract EVERY feature (complete, partial, missing)
-3. Generate constitution and ALL feature specs
-4. Create implementation plans for incomplete features
+3. Generate `.specify/memory/constitution.md`
+4. Create `.specify/specs/NNN-feature-name/spec.md` for ALL features
+5. Create `plan.md` for PARTIAL/MISSING features
 
-**Expected output**:
-- Constitution created
-- 15-50 feature specs created (depending on app size)
-- 100% feature coverage
-- Implementation plans for incomplete features
+### Checkpoint: Verify Automated Path Succeeded
 
-### Step 3: Verify Success
+After running the reconciliation prompt, verify ALL of these:
 
-After the tool completes, verify:
-1. `.specify/memory/constitution.md` exists
-2. `.specify/specs/###-feature-name/` directories created for ALL features
-3. Each feature has `spec.md`
-4. PARTIAL/MISSING features have `plan.md`
+```bash
+# Check 1: Constitution exists
+test -f .specify/memory/constitution.md && echo "OK: constitution.md exists" || echo "FAIL: constitution.md missing"
+
+# Check 2: At least one spec exists
+SPEC_COUNT=$(find .specify/specs -name "spec.md" -type f 2>/dev/null | wc -l)
+echo "Spec count: $SPEC_COUNT"
+if [ "$SPEC_COUNT" -eq 0 ]; then
+  echo "FAIL: No specs generated"
+fi
+```
+
+**IF both checks pass:** Log "PROGRESS: Automated spec generation succeeded. $SPEC_COUNT specs created." Continue to Step 4.
+
+**IF either check fails:** Execute the manual fallback in `operations/manual-spec-generation.md`. Read that file and follow its Fallback Steps 1-5. Then continue to Step 4.
 
 ---
 
-## If Automated Tool Fails
+## Step 4: Generate Plans (Thoroughness Level 2+)
 
-The MCP tool creates all Spec Kit files programmatically - it does NOT need `specify init`.
+**IF GENERATE_PLANS is false:** Skip this step. Log "PROGRESS: Plan generation skipped (thoroughness=specs)."
 
-**The tool creates**:
-- `.specify/memory/constitution.md` (from templates)
-- `.specify/specs/###-feature-name/spec.md` (all features)
-- `.specify/specs/###-feature-name/plan.md` (for incomplete features)
-- `.claude/commands/speckit.*.md` (slash commands)
+**IF GENERATE_PLANS is true:** Read and execute `operations/plan-generation.md`. This dispatches parallel subagents to generate `plan.md` for every PARTIAL/MISSING feature.
 
-**If the MCP tool fails**, use the manual reconciliation prompt:
+### Checkpoint: Verify Plan Coverage
 
 ```bash
-# Copy this prompt into Claude.ai:
-cat web/reconcile-specs.md
-
-# This will manually create all specs with 100% coverage
+INCOMPLETE=$(grep -rl "PARTIAL\|MISSING" .specify/specs/*/spec.md 2>/dev/null | wc -l)
+PLANS=$(find .specify/specs -name "plan.md" -type f 2>/dev/null | wc -l)
+echo "Incomplete features: $INCOMPLETE, Plans generated: $PLANS"
 ```
 
-**DO NOT run `specify init`** - it requires GitHub API access and isn't needed since F002 creates all files directly.
+Confirm plan count matches incomplete feature count. Report any gaps.
 
-This creates:
-```
-.specify/
-├── memory/
-│   └── constitution.md       # Project principles (will be generated)
-├── templates/                # AI agent configs
-├── scripts/                  # Automation utilities
-└── specs/                    # Feature directories (will be generated)
-    ├── 001-feature-name/
-    │   ├── spec.md          # Feature specification
-    │   ├── plan.md          # Implementation plan
-    │   └── tasks.md         # Task breakdown (generated by /speckit.tasks)
-    └── 002-another-feature/
-        └── ...
-```
-
-**Note:** GitHub Spec Kit uses `.specify/specs/NNN-feature-name/` directory structure
-
-### Step 2: Generate Constitution
-
-From `docs/reverse-engineering/functional-specification.md`, create `.specify/memory/constitution.md`:
-
-**Constitution includes:**
-- **Purpose & Values** - Why this project exists, core principles
-- **Technical Decisions** - Architecture choices with rationale
-- **Development Standards** - Code style, testing requirements, review process
-- **Quality Standards** - Performance, security, reliability requirements
-- **Governance** - How decisions are made
-
-**Use `/speckit.constitution` command:**
-```
-After generating initial constitution, user can run:
-> /speckit.constitution
-
-To refine and update the constitution interactively
-```
-
-### Step 3: Generate Specifications
-
-Transform `docs/reverse-engineering/functional-specification.md` into individual feature specs in `.specify/specs/FEATURE-ID/`:
-
-**Recommended:** Use the Task tool with `subagent_type=stackshift:technical-writer` for efficient, parallel spec generation.
-
-**Directory Structure (per GitHub Spec Kit conventions):**
-
-Each feature gets its own directory:
-```
-specs/001-user-authentication/
-  ├── spec.md              # Feature specification
-  └── plan.md              # Implementation plan
-```
-
-**spec.md format:**
-
-```markdown
-# Feature: User Authentication
-
-## Status
-⚠️ **PARTIAL** - Backend complete, frontend missing login UI
-
-## Overview
-[Description of what this feature does]
-
-## User Stories
-- As a user, I want to register an account so that I can save my data
-- As a user, I want to log in so that I can access my dashboard
-
-## Acceptance Criteria
-- [ ] User can register with email and password
-- [x] User can log in with credentials
-- [ ] User can reset forgotten password
-- [x] JWT tokens issued on successful login
-
-## Technical Requirements
-- Authentication method: JWT
-- Password hashing: bcrypt
-- Session duration: 24 hours
-- API endpoints:
-  - POST /api/auth/register
-  - POST /api/auth/login
-  - POST /api/auth/reset-password
-
-## Implementation Status
-**Completed:**
-- ✅ Backend API endpoints (all 3)
-- ✅ Database user model
-- ✅ JWT token generation
-
-**Missing:**
-- ❌ Frontend login page
-- ❌ Frontend registration page
-- ❌ Password reset UI
-- ❌ Token refresh mechanism
-
-## Dependencies
-None
-
-## Related Specifications
-- user-profile.md (depends on authentication)
-- authorization.md (extends authentication)
-```
-
-**Use `/speckit.specify` command:**
-```
-After generating initial specs, user can run:
-> /speckit.specify
-
-To create additional specifications or refine existing ones
-```
-
-### Step 4: Generate Implementation Plans
-
-For each **PARTIAL** or **MISSING** feature, create `plan.md` in the feature's directory:
-
-**Location:** `.specify/specs/FEATURE-ID/plan.md`
-
-**Format:**
-
-```markdown
-# Implementation Plan: User Authentication Frontend
-
-## Goal
-Complete the frontend UI for user authentication (login, registration, password reset)
-
-## Current State
-- Backend API fully functional
-- No frontend UI components exist
-- User lands on placeholder page
-
-## Target State
-- Complete login page with form validation
-- Registration page with email verification
-- Password reset flow (email + new password)
-- Responsive design for mobile/desktop
-
-## Technical Approach
-1. Create React components using existing UI library
-2. Integrate with backend API endpoints
-3. Add form validation with Zod
-4. Implement JWT token storage (localStorage)
-5. Add route protection for authenticated pages
-
-## Tasks
-- [ ] Create LoginPage component
-- [ ] Create RegistrationPage component
-- [ ] Create PasswordResetPage component
-- [ ] Add form validation
-- [ ] Integrate with API endpoints
-- [ ] Add loading and error states
-- [ ] Write component tests
-- [ ] Update routing configuration
-
-## Risks & Mitigations
-- Risk: Token storage in localStorage (XSS vulnerability)
-  - Mitigation: Consider httpOnly cookies instead
-- Risk: No rate limiting on frontend
-  - Mitigation: Add rate limiting to API endpoints
-
-## Testing Strategy
-- Unit tests for form validation logic
-- Integration tests for API calls
-- E2E tests for complete auth flow
-
-## Success Criteria
-- All acceptance criteria from specification met
-- No security vulnerabilities
-- Pass all tests
-- UI matches design system
-```
-
-**Use `/speckit.plan` command:**
-```
-After generating initial plans, user can run:
-> /speckit.plan
-
-To create or refine implementation plans
-```
-
-### Step 5: Mark Implementation Status
-
-In each specification, clearly mark what's implemented vs missing:
-
-- ✅ **COMPLETE** - Fully implemented and tested
-- ⚠️ **PARTIAL** - Partially implemented (note what exists vs what's missing)
-- ❌ **MISSING** - Not started
-
-This allows `/speckit.analyze` to verify consistency.
+Log: "PROGRESS: Plan generation complete. $PLANS plans for $INCOMPLETE incomplete features."
 
 ---
 
-## GitHub Spec Kit Slash Commands
+## Step 5: Generate Tasks (Thoroughness Level 3 Only)
 
-After setting up specs, these commands become available:
+**IF GENERATE_TASKS is false:** Skip this step. Log "PROGRESS: Task generation skipped (thoroughness does not include tasks)."
 
-### Validation & Analysis
+**IF GENERATE_TASKS is true:** Read and execute `operations/task-generation.md`. This dispatches parallel subagents to generate comprehensive `tasks.md` for every planned feature.
+
+### Checkpoint: Verify Task Quality
 
 ```bash
-# Check consistency between specs and implementation
-> /speckit.analyze
-
-# Identifies:
-# - Specs marked COMPLETE but implementation missing
-# - Implementation exists but not in spec
-# - Inconsistencies between related specs
+TASK_COUNT=$(find .specify/specs -name "tasks.md" -type f 2>/dev/null | wc -l)
+echo "Task files generated: $TASK_COUNT"
 ```
 
-### Implementation
+Confirm task count matches plan count. Flag any tasks.md under 200 lines.
+
+Log: "PROGRESS: Task generation complete. $TASK_COUNT task files generated."
+
+---
+
+## Step 6: Copy to Output Location (Greenfield Only)
+
+**IF `spec_output_location` is "." (default):** Skip this step.
+
+**IF `spec_output_location` is a different path:** Copy the generated `.specify/` directory to the target location.
 
 ```bash
-# Generate tasks from implementation plan
-> /speckit.tasks
-
-# Implement a specific feature
-> /speckit.implement <specification-name>
-
-# Runs through implementation plan step-by-step
-# Updates implementation status as it progresses
+if [ "$SPEC_OUTPUT" != "." ]; then
+  cp -r .specify/* "$SPEC_OUTPUT/.specify/"
+  echo "Copied .specify/ to $SPEC_OUTPUT/.specify/"
+fi
 ```
 
-### Clarification
+Verify: confirm `$SPEC_OUTPUT/.specify/memory/constitution.md` exists at the target.
 
-```bash
-# Resolve underspecified areas
-> /speckit.clarify
+Log: "PROGRESS: Specs copied to $SPEC_OUTPUT."
 
-# Interactive Q&A to fill in missing details
-# Similar to our complete-spec skill
+---
+
+## Step 7: Final Verification
+
+Run all success criteria checks for the configured thoroughness level.
+
+**All Levels:**
+- [ ] `.specify/` directory exists
+- [ ] `.specify/memory/constitution.md` exists and is non-empty
+- [ ] `.specify/specs/NNN-feature-name/` directories exist for ALL features
+- [ ] Each feature has `spec.md` with status markers (COMPLETE/PARTIAL/MISSING)
+- [ ] `.specify/scripts/bash/check-prerequisites.sh` exists
+
+**Thoroughness Level 2+ (Specs + Plans):**
+- [ ] Every PARTIAL/MISSING feature has `plan.md`
+- [ ] 100% plan coverage for incomplete features
+
+**Thoroughness Level 3 (Specs + Plans + Tasks):**
+- [ ] Every planned feature has `tasks.md`
+- [ ] Each `tasks.md` is 200+ lines
+
+Report a summary:
+```
+COMPLETE: Gear 3 finished.
+- Constitution: created
+- Specs: [N] generated (100% coverage)
+- Plans: [N] generated (or "skipped")
+- Tasks: [N] generated (or "skipped")
+- Output location: [path]
 ```
 
 ---
@@ -471,253 +273,54 @@ After this skill completes:
 │   └── constitution.md                    # Project principles
 ├── templates/
 ├── scripts/
-└── specs/                                 # Feature directories
-    ├── 001-user-authentication/
-    │   ├── spec.md                       # ⚠️ PARTIAL
-    │   └── plan.md                       # Implementation plan
-    ├── 002-fish-management/
-    │   ├── spec.md                       # ⚠️ PARTIAL
-    │   └── plan.md
-    ├── 003-analytics-dashboard/
-    │   ├── spec.md                       # ❌ MISSING
-    │   └── plan.md
-    └── 004-photo-upload/
-        ├── spec.md                       # ⚠️ PARTIAL
-        └── plan.md
+│   └── bash/                              # Spec Kit automation scripts
+└── specs/
+    ├── 001-feature-name/
+    │   ├── spec.md                        # Feature specification
+    │   ├── plan.md                        # Implementation plan (level 2+)
+    │   └── tasks.md                       # Task breakdown (level 3)
+    └── 002-another-feature/
+        └── ...
 
-docs/reverse-engineering/  # Keep original docs for reference
+docs/reverse-engineering/                  # Kept as reference
 ├── functional-specification.md
 ├── data-architecture.md
 └── ...
 ```
 
-### For Greenfield Separate Directory
+---
 
-If `greenfield_location` is an absolute path (e.g., `~/git/my-new-app`):
+## Error Recovery
 
-**After Gear 3, .specify/ exists in BOTH locations:**
-
-**Original repo:**
-```
-~/git/my-app/
-├── [original code]
-├── .specify/           # Created here first
-└── docs/
-```
-
-**New repo (created and initialized):**
-```
-~/git/my-new-app/
-├── .specify/           # COPIED from original repo
-├── README.md
-└── .gitignore
-```
-
-**Why copy?**
-- New repo needs specs for `/speckit.*` commands
-- New repo is self-contained and spec-driven
-- Can develop independently going forward
-- Original repo keeps specs for reference
+| Error | Recovery |
+|-------|----------|
+| `.stackshift-state.json` missing | Stop. Instruct user to run Gear 1 first. |
+| `web/reconcile-specs.md` not found | Use manual fallback in `operations/manual-spec-generation.md`. |
+| Automated spec generation produces no output | Use manual fallback in `operations/manual-spec-generation.md`. |
+| Subagent task fails during plan/task generation | Re-run the failed subagent. If it fails again, generate that plan/task inline. |
+| `spec_output_location` directory does not exist | Create it with `mkdir -p`. |
+| Spec Kit scripts download fails (curl errors) | Warn user. Gear 4 will need scripts installed manually. |
 
 ---
 
-## Integration with Original Toolkit
-
-**Reverse-Engineered Docs → Spec Kit Artifacts:**
-
-| Original Doc | Spec Kit Artifact | Location |
-|-------------|------------------|----------|
-| functional-specification.md | constitution.md | `.specify/memory/` |
-| functional-specification.md | Individual feature specs | `.specify/specs/` |
-| data-architecture.md | Technical details in specs | Embedded in specifications |
-| operations-guide.md | Operational notes in constitution | `.specify/memory/constitution.md` |
-| technical-debt-analysis.md | Implementation plans | `.specify/specs/` |
-
-**Keep both:**
-- `docs/reverse-engineering/` - Comprehensive reference docs
-- `.specify/memory/` - Spec Kit format for `/speckit` commands
-
----
-
-## Step 4: Generate Plans (Optional - Thoroughness Level 2+)
-
-**If user selected Option 2 or 3**, automatically generate implementation plans for all PARTIAL/MISSING features.
-
-### Process
-
-1. **Scan specs directory**:
-   ```bash
-   find .specify/specs -name "spec.md" -type f | sort
-   ```
-
-2. **Identify incomplete features**:
-   - Parse status from each spec.md
-   - Filter for ⚠️ PARTIAL and ❌ MISSING
-   - Skip ✅ COMPLETE features (no plan needed)
-
-3. **Generate plans in parallel** (5 at a time):
-   ```javascript
-   // For each PARTIAL/MISSING feature
-   Task({
-     subagent_type: 'general-purpose',
-     model: 'sonnet',
-     description: `Create plan for ${featureName}`,
-     prompt: `
-       Read: .specify/specs/${featureId}/spec.md
-
-       Generate implementation plan following /speckit.plan template:
-       - Assess current state (what exists vs missing)
-       - Define target state (all acceptance criteria)
-       - Determine technical approach
-       - Break into implementation phases
-       - Identify risks and mitigations
-       - Define success criteria
-
-       Save to: .specify/specs/${featureId}/plan.md
-
-       Target: 300-500 lines, detailed but not prescriptive
-     `
-   });
-   ```
-
-4. **Verify coverage**:
-   - Check every PARTIAL/MISSING spec has plan.md
-   - Report summary (e.g., "8 plans generated for 8 incomplete features")
-
----
-
-## Step 5: Generate Tasks (Optional - Thoroughness Level 3 Only)
-
-**If user selected Option 3**, automatically generate comprehensive task breakdowns for all plans.
-
-### Process
-
-1. **Scan for plans**:
-   ```bash
-   find .specify/specs -name "plan.md" -type f | sort
-   ```
-
-2. **Generate tasks in parallel** (3 at a time - slower due to length):
-   ```javascript
-   // For each plan
-   Task({
-     subagent_type: 'general-purpose',
-     model: 'sonnet',
-     description: `Create tasks for ${featureName}`,
-     prompt: `
-       Read: .specify/specs/${featureId}/spec.md
-       Read: .specify/specs/${featureId}/plan.md
-
-       Generate COMPREHENSIVE task breakdown:
-       - Break into 5-10 logical phases
-       - Each task has: status, file path, acceptance criteria, code examples
-       - Include Testing phase (unit, integration, E2E)
-       - Include Documentation phase
-       - Include Edge Cases section
-       - Include Dependencies section
-       - Include Acceptance Checklist
-       - Include Priority Actions
-
-       Target: 300-500 lines (be thorough!)
-
-       Save to: .specify/specs/${featureId}/tasks.md
-     `
-   });
-   ```
-
-3. **Verify quality**:
-   - Check each tasks.md is > 200 lines
-   - Flag if too short (< 200 lines)
-   - Report summary (e.g., "8 task files generated, avg 427 lines")
-
----
-
-## Configuration
+## Configuration Reference
 
 **In .stackshift-state.json:**
 
 ```json
 {
+  "route": "brownfield",
   "config": {
-    "gear3_thoroughness": "specs+plans+tasks",  // or "specs" or "specs+plans"
+    "gear3_thoroughness": "specs+plans+tasks",
+    "spec_output_location": ".",
     "plan_parallel_limit": 5,
     "task_parallel_limit": 3
   }
 }
 ```
 
-**Or ask user interactively if not set.**
-
----
-
-## Success Criteria
-
-After running this skill, you should have:
-
-**Thoroughness Level 1 (Specs Only):**
-- ✅ `.specify/` directory initialized
-- ✅ `constitution.md` created with project principles
-- ✅ Individual feature specifications in `.specify/specs/`
-- ✅ Implementation status clearly marked (✅/⚠️/❌)
-- ✅ `/speckit.*` slash commands available
-
-**Thoroughness Level 2 (Specs + Plans):**
-- ✅ Everything from Level 1
-- ✅ `plan.md` for every PARTIAL/MISSING feature
-- ✅ 100% plan coverage for incomplete features
-- ✅ Ready for manual task breakdown or `/speckit.tasks`
-
-**Thoroughness Level 3 (Specs + Plans + Tasks):**
-- ✅ Everything from Level 2
-- ✅ `tasks.md` for every planned feature
-- ✅ Comprehensive task lists (300-500 lines each)
-- ✅ Complete roadmap ready for implementation
-- ✅ No additional planning needed
-
 ---
 
 ## Next Step
 
-Once specifications are created in Spec Kit format, proceed to:
-
-**Step 4: Gap Analysis** - Use `/speckit.analyze` to identify inconsistencies and the gap-analysis skill to create prioritized implementation plan.
-
----
-
-## Example Workflow
-
-```bash
-# This skill runs
-1. specify init my-app
-2. Generate constitution.md from functional-specification.md
-3. Create individual feature specs from functional requirements
-4. Mark implementation status (✅/⚠️/❌)
-5. Generate implementation plans for gaps
-
-# User can then run
-> /speckit.analyze
-# Shows: "5 PARTIAL features, 3 MISSING features, 2 inconsistencies"
-
-> /speckit.implement user-authentication
-# Walks through implementation plan step-by-step
-
-> /speckit.specify
-# Add new features as needed
-```
-
----
-
-## Technical Notes
-
-- Spec Kit uses `.specify/` directory (not `specs/`)
-- Specifications are markdown files, not JSON/YAML
-- Implementation status uses emoji markers: ✅ ⚠️ ❌
-- `/speckit` commands are slash commands in Claude Code, not CLI
-- Constitution is a living document, update as project evolves
-- Keep reverse-engineering docs as comprehensive reference
-- Use `stackshift:technical-writer` agent for efficient parallel spec generation
-- Always use `--ai claude` flag with `specify init` for non-interactive mode
-
----
-
-**Remember:** This integrates your reverse-engineered codebase with GitHub Spec Kit, enabling the full `/speckit.*` workflow for ongoing development.
+Proceed to **Gear 4: Gap Analysis** -- use `/speckit.analyze` to identify inconsistencies and the gap-analysis skill to create a prioritized implementation plan.

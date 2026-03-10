@@ -1,0 +1,10 @@
+stateDiagram-v2
+    [*] --> analyze
+    analyze --> reverse-engineer
+    reverse-engineer --> create-specs
+    create-specs --> gap-analysis
+    gap-analysis --> complete-spec
+    complete-spec --> implement
+    analyze --> cruise-control: auto
+    implement --> [*]
+    cruise-control --> [*]

@@ -1,0 +1,68 @@
+{
+  "diagrams": [
+    {
+      "name": "Workflow State Machine",
+      "type": "stateDiagram-v2",
+      "path": "/Users/jonahschulte/git/stackshift/docs/diagrams/workflow.mmd",
+      "lines": 10,
+      "nodes": 9
+    },
+    {
+      "name": "System Architecture",
+      "type": "graph",
+      "path": "/Users/jonahschulte/git/stackshift/docs/diagrams/architecture.mmd",
+      "lines": 19,
+      "nodes": 6
+    },
+    {
+      "name": "Class Diagram: security",
+      "type": "classDiagram",
+      "path": "/Users/jonahschulte/git/stackshift/docs/diagrams/class-security.mmd",
+      "lines": 10,
+      "nodes": 1
+    },
+    {
+      "name": "Class Diagram: state-manager",
+      "type": "classDiagram",
+      "path": "/Users/jonahschulte/git/stackshift/docs/diagrams/class-state-manager.mmd",
+      "lines": 50,
+      "nodes": 4
+    },
+    {
+      "name": "Class Diagram: file-utils",
+      "type": "classDiagram",
+      "path": "/Users/jonahschulte/git/stackshift/docs/diagrams/class-file-utils.mmd",
+      "lines": 1,
+      "nodes": 0
+    },
+    {
+      "name": "Sequence Diagram: analyze",
+      "type": "sequenceDiagram",
+      "path": "/Users/jonahschulte/git/stackshift/docs/diagrams/sequence-analyze.mmd",
+      "lines": 21,
+      "nodes": 16
+    },
+    {
+      "name": "Sequence Diagram: reverse-engineer",
+      "type": "sequenceDiagram",
+      "path": "/Users/jonahschulte/git/stackshift/docs/diagrams/sequence-reverse-engineer.mmd",
+      "lines": 23,
+      "nodes": 18
+    },
+    {
+      "name": "Sequence Diagram: create-specs",
+      "type": "sequenceDiagram",
+      "path": "/Users/jonahschulte/git/stackshift/docs/diagrams/sequence-create-specs.mmd",
+      "lines": 22,
+      "nodes": 16
+    }
+  ],
+  "generatedAt": "2025-11-17T17:24:53.641Z",
+  "stackshiftVersion": "1.0.0",
+  "stats": {
+    "totalDiagrams": 8,
+    "generationTimeMs": 43,
+    "sourceFilesParsed": 3,
+    "errors": 0
+  }
+}

@@ -15,7 +15,7 @@ After completing all analysis steps, generate a comprehensive `analysis-report.m
 
 **Date:** [Current Date - YYYY-MM-DD]
 **Directory:** [Full path from pwd]
-**Analyst:** Claude Code (Reverse Engineering Toolkit v1.0.0)
+**Analyst:** Claude Code (StackShift [Read version from .claude-plugin/plugin.json])
 
 ---
 
@@ -368,17 +368,17 @@ Based on this analysis, the reverse engineering process should focus on:
 
 ### Reverse Engineering Focus Areas
 
-For **Step 2 (Reverse Engineer)**:
+For **Gear 2 (Reverse Engineer)**:
 - Prioritize extracting documentation for: [List components]
 - Pay special attention to: [Areas of concern]
 - Can likely skip: [Well-documented areas]
 
 ### Estimated Reverse Engineering Effort
-- **Step 2 (Reverse Engineer):** ~[X] minutes (based on codebase size)
-- **Step 3 (Create Specifications):** ~[X] minutes
-- **Step 4 (Gap Analysis):** ~[X] minutes
-- **Step 5 (Complete Specification):** ~[X] minutes (interactive)
-- **Step 6 (Implement from Spec):** ~[X] hours/days (depends on gaps)
+- **Gear 2 (Reverse Engineer):** ~[X] minutes (based on codebase size)
+- **Gear 3 (Create Specifications):** ~[X] minutes
+- **Gear 4 (Gap Analysis):** ~[X] minutes
+- **Gear 5 (Complete Specification):** ~[X] minutes (interactive)
+- **Gear 6 (Implement from Spec):** ~[X] hours/days (depends on gaps)
 
 ---
 
@@ -418,8 +418,8 @@ Examples:
 ---
 
 **Report Generated:** [Timestamp]
-**Toolkit Version:** 1.0.0
-**Ready for Step 2:** ✅
+**Toolkit Version:** [Read version from .claude-plugin/plugin.json]
+**Ready for Gear 2:** ✅
 ```
 
 ---
@@ -489,6 +489,6 @@ Once the report is generated and reviewed:
 1. **Review with user** - Present key findings
 2. **Confirm accuracy** - Ask if the analysis matches their understanding
 3. **Adjust estimates** - Update based on user feedback
-4. **Proceed to Step 2** - Use the reverse-engineer skill to generate comprehensive documentation
+4. **Proceed to Gear 2** - Use the reverse-engineer skill to generate comprehensive documentation
 
 The analysis report serves as the foundation for the entire reverse engineering process.

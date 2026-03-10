@@ -1,0 +1,49 @@
+classDiagram
+    class StateManager {
+        -string stateFile
+        -string STATE_VERSION
+        +constructor(directory: string) void
+        -validateState(data: any) ValidationResult
+        -safeJsonParse(text: string) any
+        -atomicWrite(state: State) Promise<void>
+        +load() Promise<State>
+        +createInitialState(directory: string, route: Route) State
+        +initialize(directory: string, route: Route) Promise<State>
+        +update(updater: (state: State) => State) Promise<State>
+        +updateRoute(route: Route) Promise<State>
+        +completeStep(stepId: StepId, details: any) Promise<State>
+        -getNextStep(currentStep: StepId) StepId | null
+        +exists() Promise<boolean>
+    }
+
+    class AutoConfig {
+        <<interface>>
+        +'defer' | 'prompt' | 'skip' clarifications_strategy
+        +'none' | 'p0' | 'p0_p1' | 'all' implementation_scope
+        +boolean pause_between_gears
+    }
+
+    class State {
+        <<interface>>
+        +string version
+        +string created
+        +string updated
+        +Route path
+        +StepId | null currentStep
+        +StepId[] completedSteps
+        +{
+    projectName: string;
+    projectPath: string;
+    pathDescription?: string;
+  } metadata
+        +Record<string, any> stepDetails
+        +boolean auto_mode
+        +AutoConfig auto_config
+        +any config
+    }
+
+    class ValidationResult {
+        <<interface>>
+        +boolean valid
+        +string[] errors
+    }

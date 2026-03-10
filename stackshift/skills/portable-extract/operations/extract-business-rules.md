@@ -1,12 +1,16 @@
 # Extract Business Rules
 
-Detailed instructions for extracting tech-agnostic business rules, data contracts, edge cases, and interaction patterns from reverse-engineering docs.
+Extract and categorize all business logic into portable, implementation-independent specifications. Each rule gets a unique ID for cross-referencing with epics.md stories.
+
+---
+
+## Reduced Coverage
+
+When `business-context.md` is unavailable (legacy 9-doc case), skip business constraint extraction in Step 3. Mark the business constraints section in component-spec.md with `[REDUCED COVERAGE - business-context.md unavailable]`. Extract decision trees from `functional-specification.md` only.
 
 ---
 
 ## Overview
-
-Extract and categorize all business logic into portable, implementation-independent specifications. Each rule gets a unique ID for cross-referencing with epics.md stories.
 
 **ID Prefixes:**
 - `BR-CALC-*` - Calculation rules (formulas, not code)
@@ -339,3 +343,30 @@ After extraction, verify NONE of these appear in the output:
 - "Redis cache" -> "cache layer"
 - "JWT token" -> "authentication credential"
 - "S3 bucket" -> "file storage"
+
+---
+
+## Mode-Specific Behavior
+
+### YOLO Mode
+
+- Extract all business rules automatically without user confirmation.
+- When two business rules conflict (e.g., overlapping validation ranges), choose the more restrictive rule and mark with `[AUTO-RESOLVED]`.
+- When a data contract shape is ambiguous (fields could be required or optional), default to required and mark with `[AUTO-RESOLVED]`.
+- When an edge case severity is unclear, classify as "Important" (middle tier).
+
+### Guided Mode
+
+- Auto-extract all clearly defined rules without prompting.
+- Present these ambiguities to the user for resolution:
+  - Conflicting business rules: "These rules overlap when [condition]. Which takes precedence?"
+  - Ambiguous data contract boundaries: "Should [field] be part of DC-IN-001 or a separate contract?"
+  - Unclear edge case priority: "Is [edge case] Critical or Important for the target context?"
+- Limit questions to 3-5 items. Resolve remaining ambiguities with most-restrictive defaults.
+
+### Interactive Mode
+
+- Present each extracted category (calculations, validations, decisions, state machines) for step-by-step review.
+- Ask the user to confirm or modify each business rule before finalizing.
+- Walk through data contracts individually, confirming shape and constraints.
+- Present the full edge case list for prioritization.

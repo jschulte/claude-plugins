@@ -1,308 +1,116 @@
-# Handoff: Reverse Engineering → Spec-Driven Development
+# Handoff: Reverse Engineering to Spec-Driven Development
 
-**The transition point from reverse engineering to standard GitHub Spec Kit workflow**
+The one-time transition from reverse engineering (Gears 1-5) to standard GitHub Spec Kit workflow.
 
 ---
 
-## When This Happens
+## When This Applies
 
-After completing Gears 1-5 (reverse engineering complete), before starting implementation.
-
-**Triggers:**
-- User is on main/master branch
-- Gap analysis shows PARTIAL or MISSING features
-- Implementation plans exist in .specify/memory/plans/
-- User hasn't created feature branch yet
-
-**Purpose:** Celebrate completion, explain transition, guide next steps.
+Execute this handoff when all of these conditions are true:
+- The current branch is `main` or `master`
+- Gears 1-5 are complete (gap analysis shows PARTIAL or MISSING features)
+- Implementation plans exist in `specs/`
+- No feature branch has been created yet
 
 ---
 
 ## Handoff Procedure
 
-### Step 1: Celebrate Completion
+### Step 1: Summarize Completion
 
-```markdown
-# 🎉 Reverse Engineering Complete!
+Report to the user what has been accomplished:
+- Gear 1 (Analysis) -- tech stack detected, completeness assessed
+- Gear 2 (Reverse Engineering) -- comprehensive documentation files created
+- Gear 3 (Specifications) -- GitHub Spec Kit structure created in `specs/`
+- Gear 4 (Gap Analysis) -- missing features identified and prioritized in `docs/gap-analysis-report.md`
+- Gear 5 (Complete Specification) -- all clarifications resolved, no `[NEEDS CLARIFICATION]` markers remain
 
-Congratulations! You've successfully transformed your codebase into a
-fully-specified, spec-driven project.
-
-## What You've Accomplished
-
-✅ **Gear 1: Analysis** - Tech stack detected, completeness assessed
-✅ **Gear 2: Reverse Engineering** - 8 comprehensive documentation files
-✅ **Gear 3: Specifications** - GitHub Spec Kit structure created
-✅ **Gear 4: Gap Analysis** - Missing features identified and prioritized
-✅ **Gear 5: Complete Specification** - All clarifications resolved
-
-## What You Have Now
-
-**Documentation:**
-- analysis-report.md
-- docs/reverse-engineering/ (8 files)
-- docs/gap-analysis-report.md
-
-**GitHub Spec Kit:**
-- .specify/memory/constitution.md (project principles)
-- .specify/memory/specifications/ (X feature specs)
-- .specify/memory/plans/ (Y implementation plans)
-
-**State:**
-- .stackshift-state.json (complete history)
-
-**All committed to:** [current branch]
-```
+Report the artifacts that now exist:
+- `analysis-report.md`
+- `docs/reverse-engineering/` (documentation files)
+- `docs/gap-analysis-report.md`
+- `specs/` (feature specifications and implementation plans)
+- `.stackshift-state.json` (complete history)
 
 ### Step 2: Explain the Transition
 
-```markdown
-## 🔄 What Happens Next?
-
-You're now transitioning from **reverse engineering** (one-time) to
-**standard spec-driven development** (ongoing).
-
-### Two Different Workflows
-
-**StackShift Reverse Engineering (You Just Finished This):**
-- Purpose: Transform existing codebase into specifications
-- When: One-time (or when major refactor needed)
-- Skills: analyze, reverse-engineer, create-specs, gap-analysis, complete-spec
-- Output: Complete specification of your system
-- ✅ DONE!
-
-**GitHub Spec Kit Standard Workflow (Use Going Forward):**
-- Purpose: Implement features, fix bugs, ongoing development
-- When: Every day, every feature
-- Commands: /speckit.tasks, /speckit.implement, /speckit.analyze
-- Workflow: Feature branch → implement → validate → merge
-- ⬅️ START USING THIS NOW
-
-### Key Difference
-
-**StackShift** = Creating the specs from existing code
-**Spec Kit** = Building features from specs
-
-You've completed the StackShift phase. Now you use Spec Kit!
-```
+Explain to the user:
+- StackShift reverse engineering (one-time) is complete.
+- Going forward, use GitHub Spec Kit commands for all development: `/speckit.tasks`, `/speckit.implement`, `/speckit.analyze`.
+- The workflow is: feature branch, implement from specs, validate, merge.
 
 ### Step 3: Show Remaining Work
 
-```markdown
-## 📋 Your Remaining Work (From Gap Analysis)
+Read `docs/gap-analysis-report.md` and list all features that need implementation, grouped by priority:
+- P0/P1 (high priority) -- list each feature with status, estimated effort, and spec path in `specs/`
+- P2/P3 (medium/low priority) -- list each feature similarly
 
-You have X features ready for implementation:
-
-### High Priority (P0/P1)
-1. **[Feature 1 Name]** - [X hours]
-   - Status: ⚠️ PARTIAL (backend done, UI missing)
-   - Plan: .specify/memory/plans/[feature-1].md
-
-2. **[Feature 2 Name]** - [X hours]
-   - Status: ❌ MISSING (not started)
-   - Plan: .specify/memory/plans/[feature-2].md
-
-### Medium Priority (P2)
-3. **[Feature 3 Name]** - [X hours]
-   - Status: ❌ MISSING
-   - Plan: .specify/memory/plans/[feature-3].md
-
-[... list all ...]
-
-## Total Estimated Effort
-
-- P0 features: [X hours]
-- P1 features: [Y hours]
-- P2 features: [Z hours]
-- **Total: [N hours]**
-```
+Report total estimated effort by priority tier.
 
 ### Step 4: Offer Feature Branch Setup
 
-```markdown
-## 🚀 Ready to Start Implementing?
+Recommend the highest-priority feature to implement first. Explain why it was chosen (highest priority, foundational dependency, clearest plan).
 
-I recommend starting with: **[First Feature Name]**
+Ask the user: "Create a feature branch and start implementing, or provide instructions for manual setup?"
 
-**Why this one first:**
-- [Reason: highest priority, foundational, etc.]
-- Clear implementation plan already exists
-- Estimated effort: [X hours]
+**If the user says yes:** Proceed to Step 5.
+**If the user says no:** Proceed to Step 6.
 
-**Would you like me to set up the feature branch for you?**
+### Step 5: Create Feature Branch (User Accepts)
 
-If yes:
-1. Create feature branch: `002-[feature-name]`
-2. Set up working environment
-3. Show you the `/speckit.tasks` and `/speckit.implement` workflow
-
-If no:
-- I'll provide instructions for doing it manually
-- You can implement when ready
-```
-
-### Step 5: If User Says Yes - Set Up Feature Branch
+Run these commands:
 
 ```bash
-# Get feature name from plan (e.g., "manual-catch-logging-frontend")
-FEATURE_NAME="[feature-name]"
-FEATURE_NUMBER="002"  # Increment from existing
+FEATURE_NAME="[feature-name-from-plan]"
+FEATURE_NUMBER="002"  # Increment from existing branches
 
-# Create and switch to feature branch
 git checkout -b ${FEATURE_NUMBER}-${FEATURE_NAME}
+```
 
-# Create README in branch
-cat > WORKING_ON.md <<EOF
-# Feature: ${FEATURE_NAME}
+Create a `WORKING_ON.md` file in the branch root with:
+- Feature name and branch name
+- Path to the specification in `specs/`
+- Path to the implementation plan in `specs/`
+- Status: In Progress
+- Next steps: `/speckit.tasks`, `/speckit.implement`, `/speckit.analyze`
 
-**Branch:** ${FEATURE_NUMBER}-${FEATURE_NAME}
-**Specification:** .specify/memory/specifications/[spec-file].md
-**Implementation Plan:** .specify/memory/plans/${FEATURE_NAME}.md
-
-## Status
-🔄 In Progress
-
-## Next Steps
-
-1. Generate tasks from implementation plan:
-   \`\`\`
-   /speckit.tasks
-   \`\`\`
-
-2. Execute implementation:
-   \`\`\`
-   /speckit.implement
-   \`\`\`
-
-3. Validate:
-   \`\`\`
-   /speckit.analyze
-   \`\`\`
-
-## Progress
-[Will be updated as you work]
-EOF
-
-# Commit
+Commit and push:
+```bash
 git add WORKING_ON.md
 git commit -m "chore: set up feature branch for ${FEATURE_NAME}"
 git push -u origin ${FEATURE_NUMBER}-${FEATURE_NAME}
 ```
 
-**Report to user:**
-```markdown
-✅ Feature branch created: `002-[feature-name]`
+Report to the user that the branch is ready and instruct them to run `/speckit.tasks` to begin.
 
-## You're All Set!
+### Step 6: Provide Manual Instructions (User Declines)
 
-**Next command to run:**
-
-```
-/speckit.tasks
-```
-
-This will:
-1. Read the implementation plan
-2. Generate actionable task checklist
-3. Break down the 52-hour plan into specific steps
-
-Then you can run:
-```
-/speckit.implement
-```
-
-To execute the tasks step-by-step!
-
-**I'm ready to help.** Run `/speckit.tasks` when you're ready to start building.
-```
-
-### Step 6: If User Says No - Provide Manual Instructions
-
-```markdown
-## Manual Feature Branch Workflow
-
-When you're ready to implement a feature:
-
-### 1. Create Feature Branch
-
-```bash
-# Pick a feature from .specify/memory/plans/
-# Choose a number (001, 002, 003, etc.)
-# Name format: {number}-{feature-name}
-
-git checkout -b 002-feature-name
-git push -u origin 002-feature-name
-```
-
-### 2. Run Spec Kit Commands
-
-```
-# Generate tasks
-/speckit.tasks
-
-# Implement
-/speckit.implement
-
-# Validate
-/speckit.analyze
-```
-
-### 3. When Complete
-
-```bash
-git add .
-git commit -m "feat: complete [feature-name] (#002)"
-gh pr create --base main
-```
-
-### 4. After Merge
-
-```bash
-git checkout main
-git pull
-# Pick next feature and repeat!
-```
-
-## Need Help Later?
-
-Just ask! I can help with:
-- Setting up feature branches
-- Running /speckit commands
-- Understanding implementation plans
-- Resolving issues
-```
+Provide the user with instructions for manual setup:
+1. Pick a feature from `specs/` that has an implementation plan.
+2. Create a branch: `git checkout -b NNN-feature-name`
+3. Run `/speckit.tasks` to generate task list.
+4. Run `/speckit.implement` to execute implementation.
+5. Run `/speckit.analyze` to validate.
+6. Commit and create a PR against main.
+7. After merge, pick the next feature and repeat.
 
 ---
 
 ## Handoff Checklist
 
-Before transitioning to standard workflow:
-
-- [ ] All specifications finalized (no [NEEDS CLARIFICATION])
-- [ ] Gap analysis complete with prioritized roadmap
-- [ ] Implementation plans exist for PARTIAL/MISSING features
-- [ ] Constitution established
-- [ ] User understands feature branch workflow
-- [ ] User knows to use /speckit.* commands (not stackshift skills)
-- [ ] Clear about next steps
+Before completing the handoff, verify:
+- All specifications are finalized (no `[NEEDS CLARIFICATION]` markers)
+- Gap analysis is complete with a prioritized roadmap
+- Implementation plans exist in `specs/` for all PARTIAL/MISSING features
+- The user understands the feature branch workflow
+- The user knows to use `/speckit.*` commands going forward
+- Next steps are clear
 
 ---
 
-## Success Criteria
+## After Handoff
 
-After handoff, user should:
-
-✅ Understand they've completed reverse engineering
-✅ Know to use /speckit.* commands going forward
-✅ Have clear next steps (either feature branch created or instructions provided)
-✅ Feel confident about proceeding
-✅ Not confused about what to do next
-
----
-
-## Notes
-
-- This handoff only happens ONCE (after initial reverse engineering)
-- Future feature development uses standard Spec Kit workflow from the start
-- If user comes back later: Remind them they're past reverse engineering, use /speckit commands
-- Feature branch naming: 001-, 002-, 003- (numeric prefix for ordering)
+This handoff happens only once. If the user returns later, remind them:
+- Reverse engineering is complete.
+- Use `/speckit.*` commands for all ongoing development.
+- Feature branch naming convention: `001-`, `002-`, `003-` (numeric prefix for ordering).

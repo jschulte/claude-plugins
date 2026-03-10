@@ -6,13 +6,13 @@ Detailed instructions for mapping portable extract abstractions to a specific ta
 
 ## Overview
 
-This operation reads the portable extract's abstract representations and the target project's BMAD docs, then creates three mapping tables:
+Read the portable extract's abstract representations and the target project's BMAD docs. Create three mapping tables:
 
-1. **Persona Mapping** - [User]/[Admin]/[System] -> target personas
-2. **Domain Language Translation** - source terms -> target terms
-3. **Data Contract Mapping** - DC-* shapes -> target data models
+1. **Persona Mapping** -- [User]/[Admin]/[System] -> target personas
+2. **Domain Language Translation** -- source terms -> target terms
+3. **Data Contract Mapping** -- DC-* shapes -> target data models
 
-These mappings are used by the generate-targeted-epics operation to produce the final output.
+Pass the combined mapping object to the generate-targeted-epics operation.
 
 ---
 

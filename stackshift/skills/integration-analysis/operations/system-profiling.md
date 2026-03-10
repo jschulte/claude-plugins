@@ -1,8 +1,18 @@
-# System Profiling — Phase 2 Operation
+# System Profiling -- Phase 2 Operation
 
 **Purpose:** Build a comprehensive profile for a single system from available sources.
 **Called from:** SKILL.md Phase 2
 **Output:** `_integration-analysis/system-profiles/{name}.md`
+
+---
+
+## ToC
+
+1. [Input Priority](#input-priority)
+2. [Extraction Targets](#extraction-targets)
+3. [Profile Template](#profile-template)
+4. [Parallelization](#parallelization)
+5. [Quality Checklist](#quality-checklist)
 
 ---
 
@@ -59,18 +69,18 @@ Use the best available source for each extraction target. Higher priority = more
 #### REST Endpoints
 | Method | Path | Auth | Purpose | Request | Response |
 |--------|------|------|---------|---------|----------|
-| GET | /api/v2/tenant/{id} | API Key | Get tenant config | - | TenantConfig |
-| POST | /api/v2/tenant/{id}/override | OAuth | Apply override | OverridePayload | Result |
+| GET | /api/v2/dealer/{id} | API Key | Get dealer config | - | DealerConfig |
+| POST | /api/v2/dealer/{id}/override | OAuth | Apply override | OverridePayload | Result |
 
 #### Events Published
 | Topic/Queue | Payload | Trigger | Consumers |
 |-------------|---------|---------|-----------|
-| tenant.config.updated | TenantConfigEvent | Config save | Web App, Cache Service |
+| dealer.config.updated | DealerConfigEvent | Config save | CMS, CDN invalidator |
 
 #### Events Consumed
 | Topic/Queue | Payload | Publisher | Handler |
 |-------------|---------|-----------|---------|
-| inventory.updated | InventoryEvent | Inventory Service | ConfigRefreshHandler |
+| inventory.updated | InventoryEvent | Web Inventory | ConfigRefreshHandler |
 ```
 
 ### 2. Data Models
@@ -100,13 +110,13 @@ Use the best available source for each extraction target. Higher priority = more
 #### Core Entities
 | Entity | Fields | Primary Key | Relationships |
 |--------|--------|-------------|---------------|
-| Tenant | id, name, brand, group, ... | tenantId | has-many Sites |
-| Site | id, tenantId, domain, ... | siteId | belongs-to Tenant |
+| Dealer | id, name, oem, group, ... | dealerId | has-many Sites |
+| Site | id, dealerId, domain, ... | siteId | belongs-to Dealer |
 
 #### Key Types
 ```typescript
-interface TenantConfig {
-  tenantId: string;
+interface DealerConfig {
+  dealerId: string;
   hierarchy: HierarchyLevel;
   overrides: Map<string, ConfigValue>;
   // ... extracted fields
@@ -128,17 +138,17 @@ interface TenantConfig {
 |--------|-------------|
 | Reverse Engineer docs | `configuration-reference.md` |
 | Config files | `application.yml`, `config/`, `.env.example`, XML configs |
-| Real config data | User-provided paths (e.g., `~/.config/my-platform/`) |
+| Real config data | User-provided paths (e.g., `~/.dvs4/configs.prod/`) |
 | Code | Config loading logic, environment variable reads, feature flag checks |
 
-**Special attention for hierarchical configs (like Config Service):**
+**Special attention for hierarchical configs (like DVS):**
 ```markdown
 ### Configuration Hierarchy
 Level 0: Default (base config for all)
 Level 1: Country (country-specific overrides)
-Level 2: Brand (brand-specific overrides)
-Level 3: Group (tenant group overrides)
-Level 4: Tenant (individual tenant overrides)
+Level 2: OEM (manufacturer overrides)
+Level 3: Group (dealer group overrides)
+Level 4: Dealer (individual dealer overrides)
 Level 5: Site (individual site overrides)
 
 Override rule: Lower level wins. Unset = inherit from parent.
@@ -170,18 +180,18 @@ Override rule: Lower level wins. Unset = inherit from parent.
 #### Outbound (this system calls)
 | Target System | Protocol | Purpose | Auth | Criticality |
 |---------------|----------|---------|------|-------------|
-| User Service | REST | Tenant metadata | API Key | Critical — page won't render without |
-| i18n Service | REST | Translated labels | None | Critical — UI text |
+| ADD | REST | Dealer metadata | API Key | Critical — page won't render without |
+| Label Services | REST | Translated labels | None | Critical — UI text |
 
 #### Inbound (others call this system)
 | Caller | Protocol | Endpoint | Auth | Volume |
 |--------|----------|----------|------|--------|
-| Web App | REST | /api/config/{siteId} | Internal | ~10K req/min |
+| CMS Web | REST | /api/config/{siteId} | Internal | ~10K req/min |
 
 #### Shared Resources
 | Resource | Type | Shared With | Access Pattern |
 |----------|------|-------------|---------------|
-| tenant-config-cache | Redis | Web App, Cache Service | Read-through cache |
+| dealer-config-cache | Redis | CMS Web, CDN | Read-through cache |
 ```
 
 ### 5. Override/Inheritance Patterns
@@ -192,7 +202,7 @@ Override rule: Lower level wins. Unset = inherit from parent.
 - What's overridable vs. locked?
 - How are overrides keyed (composite keys, simple keys)?
 
-**This is critical for systems like Config Service where the override model IS the core business logic.**
+**This is critical for systems like DVS where the override model IS the core business logic.**
 
 ### 6. Authentication & Authorization Model
 
@@ -278,11 +288,11 @@ Phase 2 is the most parallelizable phase. Use Task agents to profile multiple sy
 
 ```
 Main Agent
-  ├── Task Agent 1 → Profile Config Service
-  ├── Task Agent 2 → Profile User Service
-  ├── Task Agent 3 → Profile API Gateway
-  ├── Task Agent 4 → Profile i18n Service
-  └── Task Agent 5 → Profile Inventory Service
+  ├── Task Agent 1 → Profile DVS
+  ├── Task Agent 2 → Profile ADD
+  ├── Task Agent 3 → Profile WIAPI
+  ├── Task Agent 4 → Profile Label Services
+  └── Task Agent 5 → Profile Web Inventory
 ```
 
 Each Task agent:
@@ -291,7 +301,7 @@ Each Task agent:
 3. Writes the system profile to `_integration-analysis/system-profiles/{name}.md`
 4. Returns a summary to the main agent
 
-**Important:** Task agents should NOT attempt cross-system analysis. That happens in Phase 3 with all profiles loaded.
+**IMPORTANT:** Each Task agent MUST NOT attempt cross-system analysis. Cross-system analysis happens in Phase 3 with all profiles loaded in the main context.
 
 ---
 

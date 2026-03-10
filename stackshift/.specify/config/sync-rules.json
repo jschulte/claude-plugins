@@ -1,0 +1,59 @@
+{
+  "mode": "strict",
+  "autoFix": false,
+  "requireApproval": true,
+  "fileMappings": {},
+  "ignorePatterns": [
+    "**/*.test.ts",
+    "**/*.test.js",
+    "**/*.spec.ts",
+    "**/*.spec.js",
+    "**/node_modules/**",
+    "**/__tests__/**",
+    "**/.git/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**"
+  ],
+  "rules": [
+    {
+      "name": "API changes require spec updates",
+      "id": "api_exports",
+      "filePattern": "src/**/*.{ts,js}",
+      "changePattern": "^[+-]\\s*export\\s+(function|class|interface|type|const)",
+      "requiresSpecUpdate": true,
+      "specSections": ["API Reference", "User Stories"],
+      "severity": "error",
+      "enabled": true,
+      "priority": 100
+    },
+    {
+      "name": "Feature additions require spec updates",
+      "id": "feature_additions",
+      "filePattern": "src/features/**/*",
+      "changeType": "added",
+      "requiresSpecUpdate": true,
+      "specSections": ["User Stories", "Functional Requirements"],
+      "severity": "error",
+      "enabled": true,
+      "priority": 90
+    },
+    {
+      "name": "Internal refactoring allowed",
+      "id": "internal_refactor",
+      "filePattern": "src/**/internal/**",
+      "requiresSpecUpdate": false,
+      "severity": "info",
+      "enabled": true,
+      "priority": 50
+    }
+  ],
+  "exemptions": {
+    "branches": [],
+    "users": [],
+    "emergencyOverride": true
+  },
+  "timeout": 30000,
+  "parallel": true,
+  "maxParallel": 4
+}

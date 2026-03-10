@@ -319,7 +319,7 @@ Summarize findings:
 
 List what documentation should be created:
 
-**Critical (needed for Step 2):**
+**Critical (needed for Gear 2):**
 - OpenAPI specification for API endpoints
 - Architecture overview document
 - Database ER diagram

@@ -1,8 +1,18 @@
-# Functionality Tiering — Phase 4 & 5 Operation
+# Functionality Tiering -- Phase 4 & 5 Operation
 
 **Purpose:** Triage capabilities into implementation tiers, then assemble into layered build plan.
-**Called from:** SKILL.md Phase 4 (tiering) and Phase 5 (layering)
+**Called from:** SKILL.md Phase 4 (tiering) and Phase 5 (layering). This single file covers both phases.
 **Output:** `pain-registry.md`, `functionality-tiers.md`, `implementation-layers.md`
+
+---
+
+## ToC
+
+1. [Pain Registry (Phase 4)](#part-1-pain-registry-phase-4)
+2. [Functionality Tiering (Phase 4)](#part-2-functionality-tiering-phase-4)
+3. [Implementation Layers (Phase 5)](#part-3-implementation-layers-phase-5)
+4. [Guided Mode Questions](#guided-mode-tiering-review-questions)
+5. [Quality Checklist](#quality-checklist)
 
 ---
 
@@ -67,14 +77,14 @@ For each pain point:
 
 ## Critical Pain Points
 
-### PAIN-001: Tenant ID type mismatch between Config Service and User Service
-- **Systems affected:** Config Service, User Service, Web App
+### PAIN-001: Dealer ID type mismatch between DVS and ADD
+- **Systems affected:** DVS, ADD, CMS Web
 - **Category:** Integration Boundary
 - **Severity:** Critical
-- **Description:** Config Service uses string tenant IDs, User Service uses numeric. Web App has adapter logic that sometimes fails on edge cases.
-- **Evidence:** `data-architecture.md` conflict analysis, Web App adapter code at `src/adapters/tenant-id.ts`
-- **Current workaround:** Web App converts at runtime with try/catch
-- **Impact:** ~0.1% of page renders fail silently with wrong tenant data
+- **Description:** DVS uses string dealer IDs, ADD uses numeric. CMS Web has adapter logic that sometimes fails on edge cases.
+- **Evidence:** `data-architecture.md` conflict analysis, CMS Web adapter code at `src/adapters/dealer-id.ts`
+- **Current workaround:** CMS Web converts at runtime with try/catch
+- **Impact:** ~0.1% of page renders fail silently with wrong dealer data
 - **Innovation opportunity:** Single canonical ID type in new platform, validated at ingestion
 
 ## Major Pain Points
@@ -92,7 +102,7 @@ For each pain point:
 
 | Tier | Name | Criteria | Guidance |
 |------|------|----------|----------|
-| **T1** | Must Have Day 1 | Core functionality with no viable workaround. Blocks all other tiers. Users cannot use the platform without this. | Page rendering, tenant config, basic content display, auth |
+| **T1** | Must Have Day 1 | Core functionality with no viable workaround. Blocks all other tiers. Users cannot use the platform without this. | Page rendering, dealer config, basic content display, auth |
 | **T2** | Needed for Production | Required for real users to adopt. Can launch internally without, but not to customers. | Advanced search, analytics, personalization, full inventory |
 | **T3** | Enhancement | Improves experience but not blocking. Can defer indefinitely. | A/B testing, advanced caching, admin power tools, reporting |
 | **PRUNE** | Remove | Deprecated, unused, or superseded by new platform capabilities. Actively should NOT be rebuilt. | Legacy workarounds, dead code paths, obsolete integrations |
@@ -143,7 +153,7 @@ I've auto-assigned tiers to {N} capabilities. Here are the {M} I'm least confide
 1. [Advanced Search] — Assigned T2, but it touches 3 systems.
    Is this needed for day 1, or can users survive with basic search?
 
-2. [Tenant Hours Display] — Assigned T1, but only Web App uses it.
+2. [Dealer Hours Display] — Assigned T1, but only CMS Web uses it.
    Is this truly day-1 critical, or could it wait for T2?
 
 3. [Legacy Report Export] — Assigned PRUNE, but I see active usage.
@@ -167,9 +177,9 @@ I've auto-assigned tiers to {N} capabilities. Here are the {M} I'm least confide
 
 | Capability | Systems | Rationale | Dependencies | Pain Points Addressed |
 |------------|---------|-----------|-------------|----------------------|
-| Page layout resolution | Web App, Config Service | Core render flow, no fallback | Config delivery | PAIN-003, PAIN-007 |
-| Tenant config delivery | Config Service | All systems depend on this | None (foundation) | PAIN-001 |
-| Basic inventory display | Inventory Service, API Gateway | Primary tenant site function | Tenant config | PAIN-012 |
+| Page layout resolution | CMS Web, DVS | Core render flow, no fallback | DVS config delivery | PAIN-003, PAIN-007 |
+| Dealer config delivery | DVS | All systems depend on this | None (foundation) | PAIN-001 |
+| Basic inventory display | Web Inventory, WIAPI | Primary dealer site function | Dealer config | PAIN-012 |
 
 ## T2: Needed for Production
 ...
@@ -181,8 +191,8 @@ I've auto-assigned tiers to {N} capabilities. Here are the {M} I'm least confide
 
 | Capability | Systems | Rationale |
 |------------|---------|-----------|
-| Legacy XML export | Web App | Replaced by JSON API in new platform |
-| Flash widget support | Web App | Technology deprecated, no modern equivalent |
+| Legacy XML export | CMS Web | Replaced by JSON API in new platform |
+| Flash widget support | CMS Web | Technology deprecated, no modern equivalent |
 ```
 
 ---
@@ -204,11 +214,11 @@ I've auto-assigned tiers to {N} capabilities. Here are the {M} I'm least confide
    - Shared type definitions and API contracts
    - Authentication and authorization infrastructure
    - Config service (delivers configuration to all consumers)
-   - Core data models (tenant, site, inventory as shared types)
+   - Core data models (dealer, site, inventory as shared types)
    - Development tooling (build, test, deploy pipeline)
 
 2. **Build L1** — select the minimum T1 capabilities to prove end-to-end:
-   - Pick 1-2 key user flows (e.g., "render a basic tenant page")
+   - Pick 1-2 key user flows (e.g., "render a basic dealer page")
    - Include only the T1 capabilities needed for those flows
    - Touch all critical-path systems (proves integration works)
    - This layer should be demonstrable — "look, it works end-to-end"
@@ -256,7 +266,7 @@ For each layer, calculate:
 | Layer | Capabilities | % of Total | % of T1 | Systems Activated |
 |-------|-------------|-----------|---------|-------------------|
 | L0 | 5 (foundation) | 12% | 0% | All (shared infra) |
-| L1 | 8 (core T1) | 20% | 60% | Config Svc, Web App, API GW |
+| L1 | 8 (core T1) | 20% | 60% | DVS, CMS, WIAPI |
 | L2 | 22 (all T1 + T2) | 55% | 100% | All |
 | L3 | 40 (all) | 100% | 100% | All |
 ```
@@ -274,18 +284,18 @@ The critical path is the longest dependency chain through the layers:
 2. **L0: Config Service MVP** (Week 2-4)
    → Blocks all config-dependent capabilities. High fan-in.
 
-3. **L1: Config Service Integration** (Week 4-6)
+3. **L1: DVS Integration** (Week 4-6)
    → First real system integration. Proves the approach.
 
 4. **L1: Basic Page Render** (Week 6-8)
-   → End-to-end proof. Touches Web App + Config Service + content delivery.
+   → End-to-end proof. Touches CMS + DVS + content delivery.
 
 5. **L2: Full Inventory Integration** (Week 8-12)
    → Most complex integration. Highest risk.
 
 **Pinch points:**
 - Config Service (blocks 80% of L1 and L2)
-- Config Integration (blocks all page rendering)
+- DVS Integration (blocks all page rendering)
 - Shared Types (blocks everything — get this right first)
 ```
 
@@ -349,7 +359,7 @@ graph LR
 {Capabilities intentionally NOT included in any layer, with rationale}
 | Capability | Systems | Reason for Pruning |
 |------------|---------|-------------------|
-| Legacy XML export | Web App | Replaced by JSON API |
+| Legacy XML export | CMS Web | Replaced by JSON API |
 ```
 
 ---

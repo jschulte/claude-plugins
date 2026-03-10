@@ -6,7 +6,7 @@ Detailed instructions for generating BMAD-format epics written in the target pro
 
 ## Overview
 
-Takes the mapping object from `map-to-target.md` and the portable extract's epics/component-spec, then generates targeted epics that read as if they were written natively for the target project.
+Take the mapping object from `map-to-target.md` and the portable extract's epics/component-spec. Generate targeted epics that read as if written natively for the target project.
 
 **Input:**
 - Portable extract (epics.md + component-spec.md)
@@ -14,8 +14,10 @@ Takes the mapping object from `map-to-target.md` and the portable extract's epic
 - Target BMAD docs (for additional context)
 
 **Output:**
-- `_portable-transplant/targeted-epics.md`
-- `_portable-transplant/transplant-report.md`
+- Content for `_portable-transplant/targeted-epics.md`
+- Content for `_portable-transplant/transplant-report.md`
+
+All examples below use a car-dealership-to-real-estate migration as illustration. Replace ALL domain-specific content with actual source and target project terms.
 
 ---
 
@@ -297,24 +299,4 @@ No epic or story should silently disappear.
 
 ## Output File Assembly
 
-### targeted-epics.md
-
-Assemble in this order:
-1. YAML frontmatter (source, target, date, mode, mappings summary)
-2. Introduction (what this file is, where it came from)
-3. Imported Persona Context (mapped personas with source info)
-4. Epics and Stories (translated content)
-5. Cross-Reference Table
-
-### transplant-report.md
-
-Assemble in this order:
-1. YAML frontmatter (source, target, date)
-2. Summary statistics
-3. Persona Mapping Detail (full table)
-4. Domain Language Translations (full table with confidence)
-5. Data Contract Mapping (full field-level mapping)
-6. Business Rule Adaptations (overrides and changes)
-7. Excluded Content (what was dropped and why)
-8. Items Requiring Review (flagged for human attention)
-9. Next Steps
+See `operations/write-output.md` for the complete structure and required fields for both output files.
