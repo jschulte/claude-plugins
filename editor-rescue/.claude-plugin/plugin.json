@@ -1,0 +1,9 @@
+{
+  "name": "editor-rescue",
+  "version": "1.0.0",
+  "description": "Rescue hundreds of hoarded unsaved Sublime Text / VS Code / Cursor buffers into organized notes, flag pasted credentials, and reset the editors so they open empty again.",
+  "author": { "name": "Jonah Schulte" },
+  "repository": "https://github.com/jschulte/claude-plugins",
+  "license": "MIT",
+  "keywords": ["sublime-text", "vscode", "cursor", "hot-exit", "unsaved", "untitled", "notes", "cleanup", "memory"]
+}

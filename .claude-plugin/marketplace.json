@@ -1,0 +1,17 @@
+{
+  "name": "jschulte",
+  "owner": {
+    "name": "Jonah Schulte"
+  },
+  "metadata": {
+    "description": "Claude Code plugins by Jonah Schulte"
+  },
+  "plugins": [
+    {
+      "name": "editor-rescue",
+      "version": "1.0.0",
+      "source": "./editor-rescue",
+      "description": "Rescue hundreds of hoarded unsaved Sublime Text / VS Code / Cursor buffers into organized notes, flag pasted credentials, and reset the editors so they open empty again."
+    }
+  ]
+}
