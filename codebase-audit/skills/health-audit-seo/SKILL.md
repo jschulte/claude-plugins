@@ -46,7 +46,7 @@ If the prompt is ambiguous, infer the most likely scope from route structure, me
 1. **Concrete file paths and line numbers** where the problem exists
 2. **The specific code, markup, or configuration** that demonstrates the issue (include snippets)
 3. **A clear articulation of real-world harm** — how this affects crawlability, indexing, social sharing, or page performance for real users
-4. **At least one corroborating signal** that confirms this is a pattern, not a one-off
+4. **A second instance or a corroborating signal** (a reproduction, a failing test, a call path traced end to end) that confirms the problem is real. A one-off defect qualifies once you have reproduced or traced it; it does not need a twin
 
 Corroborating signals can include:
 - The same issue on multiple pages or routes
@@ -63,7 +63,7 @@ Classify each finding's evidence strength:
 | Tier | Definition |
 |------|-----------|
 | **Verified** | All four evidence criteria met. A skeptical senior frontend engineer or SEO specialist would say "yeah, that's a real problem." |
-| **Probable** | Strong signals but missing one criterion (e.g., only one page affected, or harm is inferred from industry consensus rather than proven in this codebase). |
+| **Probable** | Strong signals but missing one criterion (e.g., not reproduced or traced end to end, or harm is inferred from industry consensus rather than proven in this codebase). |
 | **Observation** | Worth noting — a pattern that warrants attention but lacks sufficient evidence to call a problem. |
 | **Question** | Something that looks off but needs production testing, Google Search Console data, or domain context to evaluate. |
 

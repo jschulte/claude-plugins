@@ -30,7 +30,7 @@ Use the selected repository and its documentation conventions. Preserve other wo
 
 ## Deliver the agreed work
 
-When the user selects end-to-end delivery of an agreed issue, slice or goal, use the repository's own delivery workflow (or a delivery skill, if one is installed) for plan critique, implementation, review, integration CI and release verification. Carry forward the accepted roadmap, existing owners, exclusions and authorization. Promotion to production requires whatever release authority the repository defines. Do not route an assessment-only request into implementation or repeat a settled architecture discussion.
+When the user selects end-to-end delivery of an agreed issue, slice or goal, use the repository's own delivery workflow (or a delivery skill such as `deliver-me`, if one is installed) for plan critique, implementation, review, integration CI and release verification. Carry forward the accepted roadmap, existing owners, exclusions and authorization. Promotion to production requires whatever release authority the repository defines. Do not route an assessment-only request into implementation or repeat a settled architecture discussion.
 
 ## Establish reality and reconcile work
 

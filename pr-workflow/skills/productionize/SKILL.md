@@ -94,8 +94,8 @@ Split what you found:
 - **Genuine** — anything that changes behavior, a contract, a dependency, a shared
   abstraction, or what the PR is claiming to do.
 
-For each genuine one, use the question tool: the choice, the options, the tradeoff, your
-recommendation. Then implement the answer end to end — not the half that's cheap.
+For each genuine one, ask the user (with the question tool, if the harness has one): the
+choice, the options, the tradeoff, your recommendation. Then implement the answer end to end — not the half that's cheap.
 
 Do not build an abstraction for a mock or a transitional service unless a durable
 consumer exists today.
@@ -177,7 +177,7 @@ Close with exactly these, and nothing else:
 - **Final state** — head SHA, open + non-draft, label present, mergeable, unresolved
   thread count, checks status, worktree clean and matching remote.
 - **PR link.**
-- **Next PR in numerical order** — named, not started.
+- **Next PR** — when the user is working through a queue, the next one, named and not started.
 
 ## Red flags — stop
 
@@ -209,6 +209,6 @@ Close with exactly these, and nothing else:
 
 - Commands, verified: `references/commands.md`
 - Fallback gate, comment policy, PR body template: `references/gate.md`
-- Branch that has no PR yet → open the draft PR first; this skill starts from one.
+- Nothing built yet → `deliver-me`. A branch with no PR → open the draft PR first; this skill starts from one.
 - Review feedback on a PR that is already out for review → `pr-resolver`.
 - Is it safe to merge or release? → `bulletproof`.

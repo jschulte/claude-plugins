@@ -51,7 +51,7 @@ If the prompt is ambiguous, infer the most likely scope from schema names, servi
 1. **Concrete file paths and line numbers** where the problem exists
 2. **The specific code or pattern** that demonstrates the issue (include snippets)
 3. **A clear articulation of real-world harm** — what data is exposed, to whom, and what the consequence is for the user
-4. **At least one corroborating signal** that confirms this is a pattern, not a one-off
+4. **A second instance or a corroborating signal** (a reproduction, a failing test, a call path traced end to end) that confirms the problem is real. A one-off defect qualifies once you have reproduced or traced it; it does not need a twin
 
 If you cannot satisfy all four criteria, the finding may still be reported but must be classified at the appropriate confidence tier (see below). Speculation, hypotheticals, and "this could potentially..." findings are forbidden at the Verified tier.
 
@@ -314,7 +314,7 @@ What regulations likely apply, and is there evidence of compliance?
 Are secrets, keys, and privacy-relevant configuration handled safely?
 
 - **Secrets in source code**: API keys, database passwords, JWT secrets, encryption keys, or service account credentials committed to the repository
-- **API keys in client bundles**: Server-side API keys exposed in frontend JavaScript bundles, environment variables prefixed with `NEXT_PUBLIC_` or `REACT_APP_` that should be server-only
+- **API keys in client bundles**: Server-side API keys exposed in frontend JavaScript bundles, environment variables under a client-exposed prefix (`NEXT_PUBLIC_`, `VITE_`, `REACT_APP_` and the like) that should be server-only
 - **Environment variable handling**: Is there a `.env.example` documenting required variables? Are sensitive variables clearly separated from non-sensitive ones?
 - **.env files in version control**: `.env` files committed to the repository, or `.gitignore` patterns that do not cover all environment file variants
 - **Default credentials**: Default passwords, API keys, or tokens in configuration that are meant to be changed but may not be

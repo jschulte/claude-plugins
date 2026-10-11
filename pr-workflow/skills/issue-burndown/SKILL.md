@@ -17,7 +17,7 @@ work.
 
 ## When NOT to use
 
-- One or two issues → just fix them with your normal debugging workflow.
+- One or two issues → just fix them (`deliver-me` takes a single issue end to end).
 - The user wants analysis only → stop after Phase 2 and report; the
   disposition table and batch table ARE the deliverable.
 

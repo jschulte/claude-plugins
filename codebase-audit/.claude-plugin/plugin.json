@@ -1,6 +1,6 @@
 {
   "name": "codebase-audit",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Evidence-first reviews of a whole codebase: a scored health audit with seven specialist lenses and a sweep that runs them together, an exhaustive check for violations of the codebase's own conventions, and a finish-line roadmap for what done should mean.",
   "author": { "name": "Jonah Schulte" },
   "repository": "https://github.com/jschulte/claude-plugins",

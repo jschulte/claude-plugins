@@ -69,55 +69,20 @@ If the PR is open and either (a) lacks the label, or (b) has new reviewer activi
 
 Before anything else, figure out what kind of repo this is and what commands to run. Cache the results internally; the rest of the workflow refers back to them.
 
-Detection order (each step short-circuits if a match is found):
+Detection order:
 
-**1. Package manager (Node-family repos)**
-- `bun.lockb` → `bun`, test cmd `bun test`
-- `pnpm-lock.yaml` → `pnpm`, run cmd `pnpm exec`, script cmd `pnpm run`
-- `yarn.lock` → `yarn`, run cmd `yarn`, script cmd `yarn run`
-- `package-lock.json` or `package.json` only → `npm`, run cmd `npx`, script cmd `npm run`
+**1. The repo's own scripts**
+Read the manifest for the ecosystem (`package.json` scripts, `Makefile`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `Gemfile`, `mix.exs`, `pom.xml`, `build.gradle*`) and the lockfile beside it. The lockfile names the package manager (`pnpm-lock.yaml`, `bun.lockb`, `yarn.lock`, `package-lock.json`); the scripts name the test, type-check and lint commands. Prefer a script the repo defines over a bare tool invocation, and an incremental type-check script over a full one.
 
-**2. Test runner (Node)**
-Read `package.json`. Look at `devDependencies` and `scripts.test` for the binary:
-- `vitest` → `<run-cmd> vitest run` (specific paths) or `<script-cmd> test`
-- `jest` → `<run-cmd> jest` or `<script-cmd> test`
-- `mocha` → `<run-cmd> mocha` or `<script-cmd> test`
-- `ava`, `tap`, `node --test` — same pattern: prefer the explicit binary if you need to scope to specific files
+**2. The three gates to find**
+- A test command you can scope to specific files.
+- A type-check, if the language has one configured. Otherwise skip that gate.
+- A linter or formatter for the touched files, if one is configured. Otherwise skip that gate.
 
-If `scripts.test` exists and you don't need to scope, just run `<script-cmd> test`.
-
-**3. Type-checker (Node)**
-- `tsconfig.json` exists + `typescript` in devDependencies → check `package.json` for a `type-check` or `typecheck` script (and an `:incremental` variant if present); otherwise fall back to `<run-cmd> tsc --noEmit`. Prefer the incremental script if both exist (faster local loop).
-- No tsconfig → skip type-check phase.
-
-**4. Linter / formatter**
-- `.eslintrc*` or `eslint.config.*` → `<run-cmd> eslint <files>`
-- `biome.json` or `biome.jsonc` → `<run-cmd> @biomejs/biome check <files>`
-- `.prettierrc*` (formatter only — usually paired with a linter): run via the linter's autofix or `<run-cmd> prettier --write <files>`
-- No lint config → skip lint.
-
-**5. Non-Node ecosystems**
-If `package.json` is absent or the repo is multilingual, detect the dominant language by lockfile / config:
-- Python: `pyproject.toml` / `requirements.txt` / `Pipfile`
-  - test: `pytest` (or `python -m pytest`); fall back to `python -m unittest`
-  - type-check: `mypy .` or `pyright` if listed
-  - lint: `ruff check`, `flake8`, or `black --check`
-- Go: `go.mod`
-  - test: `go test ./...` (scope with `./pkg/...` if PR is narrow)
-  - lint: `golangci-lint run` if config present, else `go vet ./...`
-  - type-check: `go build ./...` doubles as type-check
-- Rust: `Cargo.toml`
-  - test: `cargo test`
-  - lint: `cargo clippy --all-targets -- -D warnings`
-  - type-check: `cargo check`
-- Ruby: `Gemfile` → `bundle exec rspec` / `rubocop`
-- Elixir: `mix.exs` → `mix test` / `mix credo`
-- Java/Kotlin: `pom.xml` / `build.gradle*` → `mvn test` / `./gradlew test`
-
-**6. CI as a fallback signal**
+**3. CI as a fallback signal**
 If detection above is ambiguous, peek at `.github/workflows/*.yml` (or `.gitlab-ci.yml`, `.circleci/config.yml`) for the commands CI actually runs. CI is the authoritative answer to "how does this repo verify itself?"
 
-**7. Project-specific overrides**
+**4. Project-specific overrides**
 Check for, in order:
 - `CLAUDE.md` at repo root or `app/CLAUDE.md` (or wherever the repo nests its primary code)
 - `.claude/skills/pr-resolver-overrides.md`
@@ -125,7 +90,7 @@ Check for, in order:
 
 If any of these spell out test/type-check/lint commands, **prefer them over auto-detection** — they're project conventions and may include things detection can't see (custom wrappers, env vars, working-dir requirements like "always run from `app/`").
 
-**8. Hooks**
+**5. Hooks**
 If `.husky/`, `lefthook.yml`, or `.git/hooks/pre-commit` exist, the project has pre-commit hooks. Respect them — never run `--no-verify` without explicit user authorization. If a hook fails, fix the underlying problem; don't bypass it.
 
 State briefly to the user what you detected before starting Phase 1 — one line, e.g.:

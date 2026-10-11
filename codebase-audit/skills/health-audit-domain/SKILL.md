@@ -46,7 +46,7 @@ If the prompt is ambiguous, infer the most likely scope from entity names, route
 1. **Concrete file paths and line numbers** where the problem exists
 2. **The specific code or logic** that demonstrates the issue (include snippets)
 3. **A clear articulation of real-world business harm** — who loses money, gets unauthorized access, encounters impossible states, or receives incorrect results
-4. **At least one corroborating signal** — a second instance, a contradictory implementation elsewhere, a missing guard, or a test that reveals the gap
+4. **At least one corroborating signal** — a second instance, a contradictory implementation elsewhere, a missing guard, or a test that reveals the gap. A one-off defect qualifies once you have reproduced or traced it
 
 If you cannot satisfy all four criteria, the finding may still be reported but must be classified at the appropriate confidence tier (see below). Speculation, hypotheticals, and "this could potentially..." findings are forbidden at the Verified tier.
 

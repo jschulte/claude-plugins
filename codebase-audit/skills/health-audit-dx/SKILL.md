@@ -51,7 +51,7 @@ If the prompt is ambiguous, infer the most likely scope from package structure, 
 1. **Concrete file paths, commands, or configuration** where the problem exists
 2. **The specific friction** — what a developer actually experiences (steps counted, time estimated, errors encountered)
 3. **A clear articulation of real-world harm** — who is slowed down and by how much
-4. **At least one corroborating signal** that confirms this is a pattern, not a one-off
+4. **A second instance or a corroborating signal** (a reproduction, a failing test, a call path traced end to end) that confirms the problem is real. A one-off defect qualifies once you have reproduced or traced it; it does not need a twin
 
 Corroborating signals can include:
 - A second instance of the same friction elsewhere in the workflow
@@ -482,7 +482,7 @@ X minutes because..." or "This adds Y seconds to every save-compile cycle."]
 **Recommendation**:
 [Concrete, actionable fix. Not "consider improving" — instead, "add an
 `.env.example` file with all required variables and their descriptions" or
-"switch incremental builds to SWC by changing `tsconfig.json` line 14."]
+"turn on incremental compilation in `tsconfig.json`."]
 
 **Estimated Effort**: [Small / Medium / Large]
 ```

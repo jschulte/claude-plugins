@@ -68,7 +68,7 @@ Classify each finding's evidence strength:
 | Tier | Definition |
 |------|-----------|
 | **Verified** | All four evidence criteria met. A skeptical API platform engineer would say "yeah, that's a real problem for consumers." |
-| **Probable** | Strong signals but missing one criterion (e.g., only one endpoint exhibits the issue, or consumer harm is inferred rather than proven). |
+| **Probable** | Strong signals but missing one criterion (e.g., not reproduced or traced end to end, or consumer harm is inferred rather than proven). |
 | **Observation** | Worth noting — a pattern that warrants attention but lacks sufficient evidence to call a problem. |
 | **Question** | Something that looks off but needs domain context, consumer feedback, or product owner input to evaluate. |
 
