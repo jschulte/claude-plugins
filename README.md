@@ -26,4 +26,33 @@ Then quit your editors and say "rescue my unsaved editor tabs".
 
 Details: [`editor-rescue/`](editor-rescue/).
 
+## 🔎 Codebase Audit
+
+Three reviews of a whole codebase that report only what they can point to in the code.
+
+```
+/plugin install codebase-audit@jschulte
+```
+
+- **`health-audit`** scores 12 categories and gives two separate grades: how well the code is built, and how much it is hurting users right now
+- **`arch-audit`** finds the conventions your codebase has adopted, then lists every place they are broken, with file and line
+- **`finish-line`** assesses the architecture and agrees a staged roadmap with you before any spec is written
+
+Details: [`codebase-audit/`](codebase-audit/).
+
+## 🚢 PR Workflow
+
+Four skills for the life of a pull request on GitHub. Needs the `gh` CLI.
+
+```
+/plugin install pr-workflow@jschulte
+```
+
+- **`productionize`** turns your draft PR into one a human can review: fixes, an honest description, verified claims
+- **`pr-resolver`** checks every review comment against the code, fixes the real ones and explains the rest
+- **`bulletproof`** gives a read-only verdict on whether a branch is safe to merge or release
+- **`issue-burndown`** sorts a backlog into already-fixed, claimed and actionable, then lands one PR per shared root cause
+
+Details: [`pr-workflow/`](pr-workflow/).
+
 MIT licensed.

@@ -1,0 +1,9 @@
+{
+  "name": "pr-workflow",
+  "version": "1.0.0",
+  "description": "Four skills for the life of a pull request: turn a draft into something reviewable, resolve review feedback, get a release verdict before merging, and burn down a backlog of issues into batched PRs.",
+  "author": { "name": "Jonah Schulte" },
+  "repository": "https://github.com/jschulte/claude-plugins",
+  "license": "MIT",
+  "keywords": ["pull-request", "code-review", "github", "release", "issues", "backlog", "git-worktree"]
+}

@@ -12,6 +12,18 @@
       "version": "1.0.0",
       "source": "./editor-rescue",
       "description": "Rescue hundreds of hoarded unsaved Sublime Text / VS Code / Cursor buffers into organized notes, flag pasted credentials, and reset the editors so they open empty again."
+    },
+    {
+      "name": "codebase-audit",
+      "version": "1.0.0",
+      "source": "./codebase-audit",
+      "description": "Three evidence-first reviews of a whole codebase: a scored health audit, an exhaustive sweep for violations of the codebase's own conventions, and a finish-line roadmap for what done should mean."
+    },
+    {
+      "name": "pr-workflow",
+      "version": "1.0.0",
+      "source": "./pr-workflow",
+      "description": "Four skills for the life of a pull request: turn a draft into something reviewable, resolve review feedback, get a release verdict before merging, and burn down a backlog of issues into batched PRs."
     }
   ]
 }
