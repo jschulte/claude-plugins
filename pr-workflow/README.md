@@ -1,6 +1,6 @@
 # PR Workflow
 
-Four Claude Code skills for the life of a pull request on GitHub. They need the `gh`
+Five Claude Code skills for the life of a pull request on GitHub. They need the `gh`
 CLI, signed in.
 
 ```
@@ -10,6 +10,7 @@ CLI, signed in.
 
 | Skill | When | What it does | Writes? |
 |---|---|---|---|
+| `deliver-me` | You want a change made and you are not staying to watch | Checks the change fits the codebase and reuses what exists, plans it, attacks its own plan, builds it test-first, reviews its own diff, verifies the running or deployed result, and opens the PR | Commits to a new branch and opens a PR. Does not merge |
 | `productionize` | Your draft PR is ready for a human | Reconciles the diff, the description and the verification claims, fixes what is mechanical, rewrites the body, then marks the PR ready | Commits and pushes to the PR branch |
 | `pr-resolver` | Reviewers have commented | Checks every review claim against the code, fixes the real ones, runs two independent reviews of the whole diff, posts one summary comment | Commits and pushes to the PR branch |
 | `bulletproof` | Before you merge or release | Traces the changed contracts across real failure paths and gives a verdict: ready, ready after fixes, not ready, or not proven ready | No. Audit-only unless you say otherwise |
@@ -17,6 +18,10 @@ CLI, signed in.
 
 ## Notes
 
+- `deliver-me` does not stop to ask questions. It makes each call, writes it down with
+  the alternative, and its report lists every decision so you can overrule one. When a
+  request removes a protection such as an auth check, it builds what you asked, says so
+  first, and leaves the merge to you.
 - Every skill that edits code works in its own git worktree and never in your main
   checkout. None of them force-pushes.
 - `productionize` and `pr-resolver` are safe to run on stacked PRs: both read the base

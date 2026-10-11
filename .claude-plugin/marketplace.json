@@ -21,9 +21,9 @@
     },
     {
       "name": "pr-workflow",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "source": "./pr-workflow",
-      "description": "Four skills for the life of a pull request: turn a draft into something reviewable, resolve review feedback, get a release verdict before merging, and burn down a backlog of issues into batched PRs."
+      "description": "Five skills for the life of a pull request: deliver a change end to end without supervision, turn a draft into something reviewable, resolve review feedback, get a release verdict before merging, and burn down a backlog of issues into batched PRs."
     }
   ]
 }

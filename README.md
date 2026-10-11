@@ -43,12 +43,13 @@ Details: [`codebase-audit/`](codebase-audit/).
 
 ## 🚢 PR Workflow
 
-Four skills for the life of a pull request on GitHub. Needs the `gh` CLI.
+Five skills for the life of a pull request on GitHub. Needs the `gh` CLI.
 
 ```
 /plugin install pr-workflow@jschulte
 ```
 
+- **`deliver-me`** takes one request to a verified PR without check-ins: it reuses what the codebase already has, attacks its own plan, reviews its own diff, and reports every decision it made for you
 - **`productionize`** turns your draft PR into one a human can review: fixes, an honest description, verified claims
 - **`pr-resolver`** checks every review comment against the code, fixes the real ones and explains the rest
 - **`bulletproof`** gives a read-only verdict on whether a branch is safe to merge or release
