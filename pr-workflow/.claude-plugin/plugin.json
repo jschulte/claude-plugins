@@ -1,7 +1,7 @@
 {
   "name": "pr-workflow",
-  "version": "1.1.1",
-  "description": "Five skills for the life of a pull request: deliver a change end to end without supervision, turn a draft into something reviewable, resolve review feedback, get a release verdict before merging, and burn down a backlog of issues into batched PRs.",
+  "version": "1.1.2",
+  "description": "5 skills for the life of a pull request: deliver-me (one change end to end, unsupervised), productionize (draft PR to reviewable PR), pr-resolver (resolve review feedback), bulletproof (a release verdict before merging) and issue-burndown (a backlog of issues into batched PRs).",
   "author": { "name": "Jonah Schulte" },
   "repository": "https://github.com/jschulte/claude-plugins",
   "license": "MIT",

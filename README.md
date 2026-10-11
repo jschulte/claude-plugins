@@ -4,6 +4,26 @@
 /plugin marketplace add jschulte/claude-plugins
 ```
 
+Four plugins, 18 skills. The marketplace lists the plugins; each one installs the
+skills in its row.
+
+| Plugin | Skills it installs |
+|---|---|
+| [`codebase-audit`](codebase-audit/) | `health-audit`, `health-sweep`, `health-audit-ux`, `health-audit-api`, `health-audit-data`, `health-audit-domain`, `health-audit-dx`, `health-audit-ops`, `health-audit-seo`, `arch-audit`, `finish-line` |
+| [`pr-workflow`](pr-workflow/) | `deliver-me`, `productionize`, `pr-resolver`, `bulletproof`, `issue-burndown` |
+| [`whats-left`](whats-left/) | `whats-left` |
+| [`editor-rescue`](editor-rescue/) | `editor-rescue` |
+
+```
+/plugin install codebase-audit@jschulte
+/plugin install pr-workflow@jschulte
+/plugin install whats-left@jschulte
+/plugin install editor-rescue@jschulte
+```
+
+Installed this way, a skill is called with its plugin name in front, such as
+`/pr-workflow:deliver-me`.
+
 ## 🛟 Editor Rescue
 
 Your editor reopens with 600 unsaved tabs and eats 30GB of RAM. Editor Rescue fixes that without losing anything.
@@ -56,5 +76,20 @@ Five skills for the life of a pull request on GitHub. Needs the `gh` CLI.
 - **`issue-burndown`** sorts a backlog into already-fixed, claimed and actionable, then lands one PR per shared root cause
 
 Details: [`pr-workflow/`](pr-workflow/).
+
+## 🧾 What's Left
+
+Ask "what's left?" in a long session and get the full ledger, then say "yes please" to have it finished.
+
+```
+/plugin install whats-left@jschulte
+```
+
+- Sweeps the whole session, including asides and anything lost in a compaction
+- Checks each "done" against git, PRs, CI and tests before believing it
+- Lists every remaining step through the real finish line, with risky ones marked
+- Leaves no "things to consider": each loose end is done, filed as an issue, or dropped
+
+Details: [`whats-left/`](whats-left/).
 
 MIT licensed.

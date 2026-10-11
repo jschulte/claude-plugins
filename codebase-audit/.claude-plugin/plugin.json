@@ -1,7 +1,7 @@
 {
   "name": "codebase-audit",
-  "version": "1.1.1",
-  "description": "Evidence-first reviews of a whole codebase: a scored health audit with seven specialist lenses and a sweep that runs them together, an exhaustive check for violations of the codebase's own conventions, and a finish-line roadmap for what done should mean.",
+  "version": "1.1.2",
+  "description": "11 skills for auditing a codebase: health-audit (scored, with separate grades for build quality and live harm), health-sweep (runs every applicable lens in parallel and merges the results), seven lenses (health-audit-ux, -api, -data, -domain, -dx, -ops, -seo), arch-audit (every violation of the codebase's own conventions) and finish-line (a roadmap for what done should mean).",
   "author": { "name": "Jonah Schulte" },
   "repository": "https://github.com/jschulte/claude-plugins",
   "license": "MIT",

@@ -1,0 +1,9 @@
+{
+  "name": "whats-left",
+  "version": "1.0.0",
+  "description": "Ask where a long session stands and get an honest ledger: what is verifiably done, every step still between here and finished, and an offer to carry all of it out.",
+  "author": { "name": "Jonah Schulte" },
+  "repository": "https://github.com/jschulte/claude-plugins",
+  "license": "MIT",
+  "keywords": ["session", "status", "recap", "todo", "wrap-up", "handoff", "verification"]
+}
