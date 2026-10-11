@@ -28,13 +28,14 @@ Details: [`editor-rescue/`](editor-rescue/).
 
 ## 🔎 Codebase Audit
 
-Three reviews of a whole codebase that report only what they can point to in the code.
+Reviews of a whole codebase that report only what they can point to in the code.
 
 ```
 /plugin install codebase-audit@jschulte
 ```
 
 - **`health-audit`** scores 12 categories and gives two separate grades: how well the code is built, and how much it is hurting users right now
+- **`health-sweep`** runs it alongside seven specialist lenses (UX, API, data and privacy, business logic, developer experience, ops, SEO) and merges the results into one ranked plan
 - **`arch-audit`** finds the conventions your codebase has adopted, then lists every place they are broken, with file and line
 - **`finish-line`** assesses the architecture and agrees a staged roadmap with you before any spec is written
 

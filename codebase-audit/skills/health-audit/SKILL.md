@@ -337,7 +337,7 @@ C is the grade for typical working code, not an insult. Finding problems is guar
    The root cause is the mechanism that let the defect exist, not the place it surfaced. A rule copied instead of shared, then fixed in one copy only, is a DRY pattern even when the bug shows up as a UX or reliability failure; an untested seam that let a regression ship is a Testing pattern.
 4. **Clamp to 0–10 and show the arithmetic** in the justification: `7.0 + 1.5 (3 mechanisms) − 1.0 (drift-between-copies, High) − 0.5 (god files, Medium) = 7.0`.
 
-Every category a slice actually inspected gets a score; mark the rest `N/A`. The **Engineering score** is the weighted composite of the category scores (weights below, renormalized over non-N/A categories).
+Every category a slice actually inspected gets a score; mark the rest `N/A`. The **Engineering score** is the weighted composite of the category scores (weights below, renormalized over non-N/A categories). It is the composite `/health-sweep` collects.
 
 ### Live-harm score
 
